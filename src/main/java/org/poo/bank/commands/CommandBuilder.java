@@ -1,19 +1,20 @@
 package org.poo.bank.commands;
 
+import org.poo.bank.commands.types.debug.PrintUsers;
 import org.poo.bank.commands.types.transactions.*;
 import org.poo.fileio.CommandInput;
 
-public class CommandBuilder {
+public abstract class CommandBuilder {
     public static Command build(CommandInput commandInput) {
         switch (commandInput.getCommand()) {
             case "printUsers" -> {
-                return null;
+                return new PrintUsers(commandInput);
             }
             case "printTransactions" -> {
                 return null;
             }
-            case "openAccount" -> {
-                return new OpenAccount(commandInput);
+            case "addAccount" -> {
+                return new AddAccount(commandInput);
             }
             case "addFunds" -> {
                 return new AddFunds(commandInput);
@@ -30,38 +31,39 @@ public class CommandBuilder {
             case "deleteCard" -> {
                 return new DeleteCard(commandInput);
             }
-            case "setMinBalance" -> {
+            case "setMinimumBalance" -> {
                 return new SetMinBalance(commandInput);
             }
             case "checkCardStatus" -> {
-                return new CheckCardStatus(commandInput);
+//                return new CheckCardStatus(commandInput);
             }
             case "payOnline" -> {
-                return new PayOnline(commandInput); //TODO FINISH IMPLEMENTING THIS
+//                return new PayOnline(commandInput); //TODO IMPLEMENT CURRENCY EXCHANGE FIRST
             }
             case "sendMoney" -> {
-                return null;
+//                return new SendMoney(commandInput);
             }
             case "setAlias" -> {
-                return new SetAlias(commandInput);
+//                return new SetAlias(commandInput);
             }
             case "splitPayment" -> {
-                return null;
+//                return new SplitPayment(commandInput); //TODO IMPLEMENT CURRENCY EXCHANGE FIRST
             }
             case "addInterest" -> {
-                return null;
+                return new AddInterest(commandInput);
             }
             case "changeInterestRate" -> {
-                return null;
+                return new ChangeInterestRate(commandInput);
             }
             case "report" -> {
                 return null;
             }
-            case "spendingReport" -> {
+            case "spendingsReport" -> {
                 return null;
             }
             default ->
                 throw new IllegalArgumentException("Unknown transaction: " + commandInput.getCommand());
         }
+        return null;
     }
 }

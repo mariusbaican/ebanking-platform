@@ -12,12 +12,12 @@ public class SetAlias extends Command {
 
     @Override
     public void run() {
-        if (Database.getInstance().getAccount(commandInput.getAccount()) == null)
+        /*if (Database.getInstance().getAccount(commandInput.getAccount()) == null)
             return;
 
         Account account = Database.getInstance().getAccount(commandInput.getAccount());
         account.getAliases().add(commandInput.getAlias());
-        Database.getInstance().addAccount(commandInput.getAlias(), account);
+        Database.getInstance().addAccount(commandInput.getAlias(), account);*/
         //TODO CONVERT OUTPUT TO JSON
     }
 }

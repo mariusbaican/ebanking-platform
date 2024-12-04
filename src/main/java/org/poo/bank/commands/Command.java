@@ -13,6 +13,7 @@ public abstract class Command {
     public Command(CommandInput commandInput) {
         this.commandInput = commandInput;
         this.mapper = Bank.getInstance().getObjectMapper();
+        output = mapper.createObjectNode();
     }
 
     public abstract void run();

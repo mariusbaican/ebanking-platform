@@ -1,82 +1,132 @@
 package org.poo.bank.database;
 
-import org.poo.bank.Bank;
-import org.poo.bank.Currencies;
-import org.poo.bank.components.accounts.Account;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
 import org.poo.bank.components.Card;
+import org.poo.bank.components.accounts.Account;
 import org.poo.bank.components.User;
+import org.poo.fileio.ObjectInput;
+import org.poo.fileio.UserInput;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 
+@Data
 public class Database {
     public static Database database = new Database();
 
-    private HashMap<String, User> users;
-    private HashMap<String, Account> accounts;
-    private HashMap<String, Card> cards;
-    private HashMap<Currencies<String, String>, Double> exchangeRates;
+    private final ArrayList<DatabaseEntry> db;
 
     private Database() {
-        users = new HashMap<>();
-        accounts = new HashMap<>();
-        cards = new HashMap<>();
+        db = new ArrayList<>();
     }
 
     public void reset() {
-        users.clear();
-        accounts.clear();
-        cards.clear();
+        db.clear();
+    }
+
+    public void addAll(ObjectInput input, ObjectMapper objectMapper) {
+        for (UserInput user : input.getUsers()) {
+            db.add(new DatabaseEntry(new User(user, objectMapper)));
+        }
     }
 
     public static Database getInstance() {
         return database;
     }
 
-    public void addUser(String email, User user) {
-        users.put(email, user);
+    public boolean addAccount(String email, Account account) {
+        for (DatabaseEntry entry : db) {
+            if (entry.getUser().getEmail().equals(email)) {
+                entry.addAccount(account);
+                System.out.println(account.getIban() + "added to database");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean removeAccount(String iban) {
+        for (DatabaseEntry entry : db) {
+            if (entry.getAccounts().getOrDefault(iban, null) != null) {
+                entry.removeAccountCards(iban);
+                entry.removeAccount(iban);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean removeCard(String cardNumber) {
+        for (DatabaseEntry entry : db) {
+            if (entry.getCards().getOrDefault(cardNumber, null) != null) {
+                entry.removeCard(cardNumber);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean addCard(String email, Card card) {
+        for (DatabaseEntry entry : db) {
+            if (entry.getUser().getEmail().equals(email)) {
+                entry.addCard(card);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public DatabaseEntry getEntryByUser(String email) {
+        for (DatabaseEntry entry : db) {
+            if (entry.getUser().getEmail().equals(email)) {
+                return entry;
+            }
+        }
+        return null;
+    }
+
+    public DatabaseEntry getEntryByCard(String cardNumber) {
+        for (DatabaseEntry entry : db) {
+            if (entry.getCards().getOrDefault(cardNumber, null) != null) {
+                return entry;
+            }
+        }
+        return null;
+    }
+
+    public DatabaseEntry getEntryByAccount(String accountNumber) {
+        for (DatabaseEntry entry : db) {
+            if (entry.getAccounts().getOrDefault(accountNumber, null) != null) {
+                return entry;
+            }
+        }
+        return null;
     }
 
     public User getUser(String email) {
-        return users.get(email);
-    }
-
-    public User removeUser(String email) {
-        return users.remove(email);
-    }
-
-    public void addAccount(String iban, Account account) {
-        accounts.put(iban, account);
+        for (DatabaseEntry entry : db) {
+            if (entry.getUser().getEmail().equals(email)) {
+                return entry.getUser();
+            }
+        }
+        return null;
     }
 
     public Account getAccount(String iban) {
-        return accounts.get(iban);
+        for (DatabaseEntry entry : db) {
+            if (entry.getAccounts().getOrDefault(iban, null) != null) {
+                return entry.getAccounts().get(iban);
+            }
+        }
+        return null;
     }
 
-    public Account removeAccount(String iban) {
-        return accounts.remove(iban);
-    }
-
-    public void addCard(String cardNumer, Card card) {
-        cards.put(cardNumer, card);
-    }
-
-    public Card getCard(String cardNumer) {
-        return cards.get(cardNumer);
-    }
-
-    public Card removeCard(String cardNumer) {
-        return cards.remove(cardNumer);
-    }
-
-    public void addExchangeRate(Currencies<String,String> currencies, Double exchangeRate) {
-        exchangeRates.put(currencies, exchangeRate);
-    }
-
-    public double getExchangeRate(Currencies<String,String> currencies) {
-        return exchangeRates.get(currencies);
-    }
-
-    public double removeExchangeRate(Currencies<String,String> currencies) {
-        return exchangeRates.remove(currencies);
+    public Card getCard(String cardNumber) {
+        for (DatabaseEntry entry : db) {
+            if (entry.getCards().getOrDefault(cardNumber, null) != null) {
+                return entry.getCards().get(cardNumber);
+            }
+        }
+        return null;
     }
 }

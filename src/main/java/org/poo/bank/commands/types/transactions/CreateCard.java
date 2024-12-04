@@ -1,13 +1,9 @@
 package org.poo.bank.commands.types.transactions;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
 import org.poo.bank.components.Card;
 import org.poo.bank.database.Database;
 import org.poo.fileio.CommandInput;
-import org.poo.utils.Utils;
 
 public class CreateCard extends Command {
     private boolean isOneTime;
@@ -24,13 +20,13 @@ public class CreateCard extends Command {
 
     @Override
     public void run() {
-        if (Bank.getInstance().getActiveUser().getEmail().equals(commandInput.getEmail())) {
-            String cardNumber = Utils.generateCardNumber();
-            Database.getInstance().addCard(cardNumber,
-                                            new Card(commandInput, cardNumber, isOneTime));
-        } else {
+        if (Database.getInstance().getUser(commandInput.getEmail()) == null)
+            return;
 
-        }
+        if (Database.getInstance().getAccount(commandInput.getAccount()) == null)
+            return;
+
+        Database.getInstance().addCard(commandInput.getEmail(), new Card(commandInput, isOneTime));
         //TODO STORE OUTPUT IN OBJECTNODE
     }
 }

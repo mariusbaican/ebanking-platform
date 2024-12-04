@@ -13,4 +13,14 @@ public class SavingsAccount extends Account {
         super(commandInput, iban);
         interestRate = commandInput.getInterestRate();
     }
+
+    public boolean addInterest() {
+        balance += interestRate * balance;
+        return true;
+    }
+
+    public boolean setInterest(double interestRate) {
+        this.interestRate = interestRate;
+        return true;
+    }
 }

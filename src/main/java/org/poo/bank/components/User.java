@@ -1,6 +1,7 @@
 package org.poo.bank.components;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import org.poo.bank.commands.Command;
 import org.poo.fileio.UserInput;
@@ -21,5 +22,9 @@ public class User {
         this.email = userInput.getEmail();
         this.objectMapper = objectMapper;
         this.transactionHistory = new ArrayList<>();
+    }
+
+    public void addTransaction(Command command) {
+        transactionHistory.add(command);
     }
 }

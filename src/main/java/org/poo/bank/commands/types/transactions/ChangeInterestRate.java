@@ -1,25 +1,26 @@
 package org.poo.bank.commands.types.transactions;
 
-import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.database.Database;
 import org.poo.fileio.CommandInput;
 
-public class SetMinBalance extends Command {
-    public SetMinBalance(CommandInput commandInput) {
+public class ChangeInterestRate extends Command {
+    public ChangeInterestRate(CommandInput commandInput) {
         super(commandInput);
     }
 
     @Override
     public void run() {
-        if (Database.getInstance().getUser(commandInput.getEmail()) == null)
-            return;
-
         if (Database.getInstance().getAccount(commandInput.getAccount()) == null)
             return;
+        Account account = Database.getInstance().getAccount(commandInput.getAccount());
+        boolean ret = account.setInterest(commandInput.getInterestRate());
+        if (ret) {
 
-        Database.getInstance().getAccount(commandInput.getAccount()).setMinBalance(commandInput.getMinBalance());
+        } else {
+
+        }
         //TODO CONVERT OUTPUT TO JSON
     }
 }
