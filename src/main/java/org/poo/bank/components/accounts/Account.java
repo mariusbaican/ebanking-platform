@@ -10,6 +10,7 @@ import org.poo.bank.database.Database;
 import org.poo.fileio.CommandInput;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public abstract class Account {
@@ -18,8 +19,8 @@ public abstract class Account {
     protected double balance;
     protected double minBalance;
     protected String accountType;
-    protected User owner;
-    protected ArrayList<String> aliases;
+    protected String owner;
+    protected List<String> aliases;
 
     public Account() { }
 
@@ -27,9 +28,9 @@ public abstract class Account {
         currency = commandInput.getCurrency();
         this.iban = iban;
         balance = 0;
-        minBalance = -1;
+        minBalance = 0;
         accountType = commandInput.getAccountType();
-        owner = null;
+        owner = commandInput.getEmail();
         aliases = new ArrayList<>();
     }
 
@@ -45,7 +46,9 @@ public abstract class Account {
         output.put("type", accountType);
         ArrayNode cardArray = Bank.getInstance().getObjectMapper().createArrayNode();
         for (String cardNumber : Database.getInstance().getEntryByAccount(iban).getCardNumbers()) {
-            cardArray.add(Database.getInstance().getCard(cardNumber).toJson());
+            Card card = Database.getInstance().getCard(cardNumber);
+            if (card.getIban().equals(iban))
+                cardArray.add(Database.getInstance().getCard(cardNumber).toJson());
         }
         output.put("cards", cardArray);
         return output;

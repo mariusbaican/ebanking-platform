@@ -1,7 +1,5 @@
 package org.poo.bank.commands.types.transactions;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.database.Database;

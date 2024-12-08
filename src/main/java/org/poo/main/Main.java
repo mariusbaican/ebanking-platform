@@ -52,6 +52,7 @@ public final class Main {
 
         for (File file : sortedFiles) {
             String filepath = CheckerConstants.OUT_PATH + file.getName();
+            System.out.println(filepath); //TODO REMOVE
             File out = new File(filepath);
             boolean isCreated = out.createNewFile();
             if (isCreated) {

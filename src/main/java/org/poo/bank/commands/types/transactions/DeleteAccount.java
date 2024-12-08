@@ -13,21 +13,35 @@ public class DeleteAccount extends Command {
 
     @Override
     public void run() {
-        if (Database.getInstance().getUser(commandInput.getEmail()) == null)
+        boolean foundError = false;
+        if (Database.getInstance().getUser(commandInput.getEmail()) == null && !foundError)
+            foundError = true;
+        if (Database.getInstance().getAccount(commandInput.getAccount()) == null && !foundError)
+            foundError = true;
+        if (Double.compare(Database.getInstance().getAccount(commandInput.getAccount()).getBalance(), 0.0) != 0 && !foundError)
+            foundError = true;
+
+        if (foundError) {
+            ObjectNode commandOutput = Bank.getInstance().getObjectMapper().createObjectNode();
+            commandOutput.put("command", "deleteAccount");
+            output.put("error", "Account couldn't be deleted - see org.poo.transactions for details");
+            output.put("timestamp", commandInput.getTimestamp());
+            commandOutput.put("output", output);
+            commandOutput.put("timestamp", commandInput.getTimestamp());
+            Bank.getInstance().getOutput().add(commandOutput.deepCopy());
             return;
-        if (Database.getInstance().getAccount(commandInput.getAccount()) == null)
-            return;
-        if (Double.compare(Database.getInstance().getAccount(commandInput.getAccount()).getBalance(), 0.0) != 0)
-            return;
+        }
 
         Database.getInstance().removeAccount(commandInput.getAccount());
-        output.put("command", "deleteAccount");
-        ObjectNode node = Bank.getInstance().getObjectMapper().createObjectNode();
-        node.put("success", "Account deleted");
-        node.put("timestamp", commandInput.getTimestamp());
-        output.put("output", node);
+
+        ObjectNode commandOutput = Bank.getInstance().getObjectMapper().createObjectNode();
+        commandOutput.put("command", "deleteAccount");
+        output.put("success", "Account deleted");
         output.put("timestamp", commandInput.getTimestamp());
-        Bank.getInstance().getOutput().add(output);
+        commandOutput.put("output", output);
+        commandOutput.put("timestamp", commandInput.getTimestamp());
+
+        Bank.getInstance().getOutput().add(commandOutput.deepCopy());
         //TODO CONVERT OUTPUT TO JSON
     }
 }

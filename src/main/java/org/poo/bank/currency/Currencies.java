@@ -1,5 +1,8 @@
-package org.poo.bank;
+package org.poo.bank.currency;
 
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode
 public class Currencies<A, B> {
 
     private final A a;

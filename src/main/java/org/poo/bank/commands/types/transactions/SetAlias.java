@@ -1,7 +1,6 @@
 package org.poo.bank.commands.types.transactions;
 
 import org.poo.bank.commands.Command;
-import org.poo.bank.components.accounts.Account;
 import org.poo.bank.database.Database;
 import org.poo.fileio.CommandInput;
 
@@ -12,12 +11,9 @@ public class SetAlias extends Command {
 
     @Override
     public void run() {
-        /*if (Database.getInstance().getAccount(commandInput.getAccount()) == null)
+        if (Database.getInstance().getAccount(commandInput.getAccount()) == null)
             return;
 
-        Account account = Database.getInstance().getAccount(commandInput.getAccount());
-        account.getAliases().add(commandInput.getAlias());
-        Database.getInstance().addAccount(commandInput.getAlias(), account);*/
-        //TODO CONVERT OUTPUT TO JSON
+        Database.getInstance().addAlias(commandInput.getAccount(), commandInput.getAlias());
     }
 }

@@ -10,16 +10,17 @@ import org.poo.bank.components.accounts.Account;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 @Data
 public class DatabaseEntry {
     private User user;
-    private HashMap<String, Account> accounts;
+    private Map<String, Account> accounts;
     private ArrayList<String> accountIbans; // This is garbage
-    private HashMap<String, Card> cards;
+    private Map<String, Card> cards;
     private ArrayList<String> cardNumbers;// This is garbage
     // Why are they garbage you may ask? Because if the order is wrong the tests fail
-    // and maintaining HashMap.values() sorted properly is impossible :D
+    // and maintaining HashMap.values() sorted properly is next to impossible :D
 
     public DatabaseEntry(User user) {
         this.user = user;

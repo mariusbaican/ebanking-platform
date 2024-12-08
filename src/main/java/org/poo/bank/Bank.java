@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.Data;
 import org.poo.bank.commands.CommandBuilder;
+import org.poo.bank.components.commerciants.CommerciantCategory;
+import org.poo.bank.components.commerciants.Expenses;
+import org.poo.bank.currency.CurrencyExchanger;
 import org.poo.bank.database.Database;
 import org.poo.fileio.*;
 import org.poo.utils.Utils;
@@ -26,9 +29,18 @@ public class Bank {
         Utils.resetRandom();
         Database.getInstance().reset();
         Database.getInstance().addAll(input, objectMapper);
+        CurrencyExchanger.reset();
+        Expenses.reset();
+        if (input.getCommerciants() != null) {
+            for (CommerciantInput commerciantInput : input.getCommerciants()) {
+                Expenses.addCategory(new CommerciantCategory(commerciantInput));
+            }
+        }
+        for (ExchangeInput exchangeInput : input.getExchangeRates()) {
+            CurrencyExchanger.addExchangeRate(exchangeInput);
+        }
         for (CommandInput commandInput : input.getCommands()) {
-            if (CommandBuilder.build(commandInput) != null)
-                CommandBuilder.build(commandInput).run();
+            CommandBuilder.build(commandInput).run();
         }
     }
 }

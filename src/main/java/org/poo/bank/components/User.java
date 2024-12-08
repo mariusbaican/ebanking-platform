@@ -7,6 +7,7 @@ import org.poo.bank.commands.Command;
 import org.poo.fileio.UserInput;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class User {
@@ -14,7 +15,7 @@ public class User {
     private String lastName;
     private String email;
     private ObjectMapper objectMapper;
-    private ArrayList<Command> transactionHistory;
+    private List<TransactionData> transactionHistory;
 
     public User(UserInput userInput, ObjectMapper objectMapper) {
         this.firstName = userInput.getFirstName();
@@ -24,7 +25,7 @@ public class User {
         this.transactionHistory = new ArrayList<>();
     }
 
-    public void addTransaction(Command command) {
-        transactionHistory.add(command);
+    public void addTransaction(TransactionData transactionData) {
+        transactionHistory.add(transactionData);
     }
 }

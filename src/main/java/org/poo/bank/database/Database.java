@@ -9,19 +9,24 @@ import org.poo.fileio.ObjectInput;
 import org.poo.fileio.UserInput;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 public class Database {
     public static Database database = new Database();
 
     private final ArrayList<DatabaseEntry> db;
+    private Map<String, String> aliases;
 
     private Database() {
         db = new ArrayList<>();
+        aliases = new HashMap<>();
     }
 
     public void reset() {
         db.clear();
+        aliases.clear();
     }
 
     public void addAll(ObjectInput input, ObjectMapper objectMapper) {
@@ -34,11 +39,15 @@ public class Database {
         return database;
     }
 
+    public void addAlias(String alias, String iban) {
+        if (getAccount(iban) != null)
+            aliases.putIfAbsent(alias, iban);
+    }
+
     public boolean addAccount(String email, Account account) {
         for (DatabaseEntry entry : db) {
             if (entry.getUser().getEmail().equals(email)) {
                 entry.addAccount(account);
-                System.out.println(account.getIban() + "added to database");
                 return true;
             }
         }
@@ -94,9 +103,13 @@ public class Database {
         return null;
     }
 
-    public DatabaseEntry getEntryByAccount(String accountNumber) {
+    public DatabaseEntry getEntryByAccount(String input) {
+        //This allows for the use of aliases instead of account iban
+        String actualIban = input;
+        if (aliases.containsKey(input))
+            actualIban = aliases.get(input);
         for (DatabaseEntry entry : db) {
-            if (entry.getAccounts().getOrDefault(accountNumber, null) != null) {
+            if (entry.getAccounts().getOrDefault(actualIban, null) != null) {
                 return entry;
             }
         }
@@ -112,10 +125,14 @@ public class Database {
         return null;
     }
 
-    public Account getAccount(String iban) {
+    public Account getAccount(String input) {
+        //This allows for the use of aliases instead of account iban
+        String actualIban = input;
+        if (aliases.containsKey(input))
+            actualIban = aliases.get(input);
         for (DatabaseEntry entry : db) {
-            if (entry.getAccounts().getOrDefault(iban, null) != null) {
-                return entry.getAccounts().get(iban);
+            if (entry.getAccounts().getOrDefault(actualIban, null) != null) {
+                return entry.getAccounts().get(actualIban);
             }
         }
         return null;

@@ -1,6 +1,7 @@
 package org.poo.bank.commands.types.transactions;
 
 import org.poo.bank.commands.Command;
+import org.poo.bank.components.TransactionData;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.components.AccountBuilder;
 import org.poo.bank.database.Database;
@@ -18,7 +19,9 @@ public class AddAccount extends Command {
 
         Account account = AccountBuilder.build(commandInput);
         Database.getInstance().addAccount(commandInput.getEmail(), account);
-//        System.out.println(account.getIban());
-//        System.out.println(commandInput.getEmail());
+        output.put("timestamp", commandInput.getTimestamp());
+        output.put("description", "New account created");
+        TransactionData data = new TransactionData(output.deepCopy(), account.getIban());
+        Database.getInstance().getUser(commandInput.getEmail()).addTransaction(data);
     }
 }
