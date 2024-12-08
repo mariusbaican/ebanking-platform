@@ -5,43 +5,51 @@ import org.poo.fileio.ExchangeInput;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CurrencyExchanger {
-    public static HashMap<Currencies<String, String>, Double> exchangeRates = new HashMap<>();
+public final class CurrencyExchanger {
+    public static final HashMap<Currencies<String, String>, Double> EXCHANGE_RATES =
+            new HashMap<>();
 
     public static void reset() {
-        exchangeRates.clear();
+        EXCHANGE_RATES.clear();
     }
 
-    public static void addExchangeRate(ExchangeInput input) {
-        exchangeRates.putIfAbsent(new Currencies<>(input.getFrom(), input.getTo()), input.getRate());
-        exchangeRates.putIfAbsent(new Currencies<>(input.getTo(), input.getFrom()), 1 / input.getRate());
+    public static void addExchangeRate(final ExchangeInput input) {
+        EXCHANGE_RATES.putIfAbsent(new Currencies<>(input.getFrom(), input.getTo()),
+                                    input.getRate());
+        EXCHANGE_RATES.putIfAbsent(new Currencies<>(input.getTo(), input.getFrom()),
+                                    1 / input.getRate());
         computeMissingRates(new Currencies<>(input.getFrom(), input.getTo()), input.getRate());
     }
 
-    public static void addExchangeRate(Currencies<String, String> currencies, double rate) {
-        exchangeRates.putIfAbsent(currencies, rate);
-        exchangeRates.putIfAbsent(new Currencies<>(currencies.getSecond(), currencies.getFirst()), 1 / rate);
+    public static void addExchangeRate(final Currencies<String, String> currencies,
+                                       final double rate) {
+        EXCHANGE_RATES.putIfAbsent(currencies, rate);
+        EXCHANGE_RATES.putIfAbsent(new Currencies<>(currencies.getSecond(), currencies.getFirst()),
+                                    1 / rate);
     }
 
-    private static void computeMissingRates(Currencies<String, String> newCurrencies, double rate) {
+    private static void computeMissingRates(final Currencies<String, String> newCurrencies,
+                                            final double rate) {
         Map<Currencies<String, String>, Double> newRates = new HashMap<>();
 
-        for (Currencies<String, String> existingCurrencies : exchangeRates.keySet()) {
+        for (Currencies<String, String> existingCurrencies : EXCHANGE_RATES.keySet()) {
             String existingStart = existingCurrencies.getFirst();
             String existingEnd = existingCurrencies.getSecond();
 
             if (existingEnd.equals(newCurrencies.getFirst())) {
-                double newRate = exchangeRates.get(existingCurrencies) * rate;
-                Currencies<String, String> newRatePair = new Currencies<>(existingStart, newCurrencies.getSecond());
-                if (!exchangeRates.containsKey(newRatePair)) {
+                double newRate = EXCHANGE_RATES.get(existingCurrencies) * rate;
+                Currencies<String, String> newRatePair =
+                        new Currencies<>(existingStart, newCurrencies.getSecond());
+                if (!EXCHANGE_RATES.containsKey(newRatePair)) {
                     newRates.put(newRatePair, newRate);
                 }
             }
 
             if (newCurrencies.getSecond().equals(existingStart)) {
-                double newRate = rate * exchangeRates.get(existingCurrencies);
-                Currencies<String, String> newRatePair = new Currencies<>(newCurrencies.getFirst(), existingEnd);
-                if (!exchangeRates.containsKey(newRatePair)) {
+                double newRate = rate * EXCHANGE_RATES.get(existingCurrencies);
+                Currencies<String, String> newRatePair =
+                        new Currencies<>(newCurrencies.getFirst(), existingEnd);
+                if (!EXCHANGE_RATES.containsKey(newRatePair)) {
                     newRates.put(newRatePair, newRate);
                 }
             }
@@ -52,13 +60,15 @@ public class CurrencyExchanger {
         }
     }
 
-    public static double getRate(Currencies<String, String> currencies) {
+    public static double getRate(final Currencies<String, String> currencies) {
         if (currencies.getFirst().equals(currencies.getSecond())) {
             return 1.0;
         }
-        double rate = exchangeRates.getOrDefault(currencies, -1.0);
+        double rate = EXCHANGE_RATES.getOrDefault(currencies, -1.0);
         if (Double.compare(rate, -1.0) == 0) {
-            throw new IllegalArgumentException("No rate found for " + currencies.getFirst() + " to " + currencies.getSecond());
+            throw new IllegalArgumentException("No rate found for "
+                                                + currencies.getFirst() + " to "
+                                                + currencies.getSecond());
         }
         return rate;
 

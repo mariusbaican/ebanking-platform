@@ -2,17 +2,20 @@ package org.poo.bank.commands.types.transactions;
 
 import org.poo.bank.commands.Command;
 import org.poo.bank.database.Database;
+import org.poo.bank.database.DatabaseEntry;
 import org.poo.fileio.CommandInput;
 
-public class SetAlias extends Command {
-    public SetAlias(CommandInput commandInput) {
+public final class SetAlias extends Command {
+    public SetAlias(final CommandInput commandInput) {
         super(commandInput);
     }
 
     @Override
     public void run() {
-        if (Database.getInstance().getAccount(commandInput.getAccount()) == null)
+        DatabaseEntry entry = Database.getInstance().getEntryByAccount(commandInput.getAccount());
+        if (entry == null) {
             return;
+        }
 
         Database.getInstance().addAlias(commandInput.getAccount(), commandInput.getAlias());
     }

@@ -3,45 +3,63 @@ package org.poo.bank.commands.types.transactions;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
+import org.poo.bank.components.TransactionData;
+import org.poo.bank.components.accounts.Account;
 import org.poo.bank.database.Database;
+import org.poo.bank.database.DatabaseEntry;
 import org.poo.fileio.CommandInput;
 
-public class DeleteAccount extends Command {
-    public DeleteAccount(CommandInput commandInput) {
+public final class DeleteAccount extends Command {
+    public DeleteAccount(final CommandInput commandInput) {
         super(commandInput);
     }
 
     @Override
     public void run() {
-        boolean foundError = false;
-        if (Database.getInstance().getUser(commandInput.getEmail()) == null && !foundError)
-            foundError = true;
-        if (Database.getInstance().getAccount(commandInput.getAccount()) == null && !foundError)
-            foundError = true;
-        if (Double.compare(Database.getInstance().getAccount(commandInput.getAccount()).getBalance(), 0.0) != 0 && !foundError)
-            foundError = true;
+        DatabaseEntry entry = Database.getInstance().getEntryByUser(commandInput.getEmail());
+        Account account;
+        boolean foundError = (entry == null);
+        if (!foundError) {
+            account = entry.getAccount(commandInput.getAccount());
+            if (account == null) {
+                foundError = true;
+            } else if (Double.compare(account.getBalance(), 0.0) != 0) {
+                output.put("description",
+                        "Account couldn't be deleted - there are funds remaining");
+                output.put("timestamp", commandInput.getTimestamp());
+
+                TransactionData data = new TransactionData(output, commandInput.getAccount());
+                entry.getUser().addTransaction(data);
+                foundError = true;
+            }
+        }
 
         if (foundError) {
-            ObjectNode commandOutput = Bank.getInstance().getObjectMapper().createObjectNode();
+            ObjectNode commandOutput = Bank.getInstance().createObjectNode();
             commandOutput.put("command", "deleteAccount");
-            output.put("error", "Account couldn't be deleted - see org.poo.transactions for details");
-            output.put("timestamp", commandInput.getTimestamp());
-            commandOutput.put("output", output);
+
+            ObjectNode error = Bank.getInstance().createObjectNode();
+            error.put("error",
+                    "Account couldn't be deleted - see org.poo.transactions for details");
+            error.put("timestamp", commandInput.getTimestamp());
+
+            commandOutput.put("output", error);
             commandOutput.put("timestamp", commandInput.getTimestamp());
-            Bank.getInstance().getOutput().add(commandOutput.deepCopy());
+            Bank.getInstance().addToOutput(commandOutput.deepCopy());
+
             return;
         }
 
-        Database.getInstance().removeAccount(commandInput.getAccount());
+        entry.removeAccount(commandInput.getAccount());
 
-        ObjectNode commandOutput = Bank.getInstance().getObjectMapper().createObjectNode();
+        ObjectNode commandOutput = Bank.getInstance().createObjectNode();
         commandOutput.put("command", "deleteAccount");
+
         output.put("success", "Account deleted");
         output.put("timestamp", commandInput.getTimestamp());
+
         commandOutput.put("output", output);
         commandOutput.put("timestamp", commandInput.getTimestamp());
-
-        Bank.getInstance().getOutput().add(commandOutput.deepCopy());
-        //TODO CONVERT OUTPUT TO JSON
+        Bank.getInstance().addToOutput(commandOutput.deepCopy());
     }
 }

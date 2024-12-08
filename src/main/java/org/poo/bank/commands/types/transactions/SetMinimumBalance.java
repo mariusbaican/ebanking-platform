@@ -2,20 +2,21 @@ package org.poo.bank.commands.types.transactions;
 
 import org.poo.bank.commands.Command;
 import org.poo.bank.database.Database;
+import org.poo.bank.database.DatabaseEntry;
 import org.poo.fileio.CommandInput;
 
-public class SetMinimumBalance extends Command {
-    public SetMinimumBalance(CommandInput commandInput) {
+public final class SetMinimumBalance extends Command {
+    public SetMinimumBalance(final CommandInput commandInput) {
         super(commandInput);
     }
 
     @Override
     public void run() {
-        if (Database.getInstance().getAccount(commandInput.getAccount()) == null) {
+        DatabaseEntry entry = Database.getInstance().getEntryByAccount(commandInput.getAccount());
+        if (entry == null) {
             return;
         }
 
-        Database.getInstance().getAccount(commandInput.getAccount()).setMinBalance(commandInput.getAmount());
-        //TODO CONVERT OUTPUT TO JSON
+        entry.getAccount(commandInput.getAccount()).setMinBalance(commandInput.getAmount());
     }
 }

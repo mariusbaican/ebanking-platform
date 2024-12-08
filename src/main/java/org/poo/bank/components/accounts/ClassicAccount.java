@@ -4,10 +4,10 @@ import lombok.Data;
 import org.poo.fileio.CommandInput;
 
 @Data
-public class ClassicAccount extends Account {
+public final class ClassicAccount extends Account {
     public ClassicAccount() { }
 
-    public ClassicAccount(CommandInput commandInput, String iban) {
+    public ClassicAccount(final CommandInput commandInput, final String iban) {
         super(commandInput, iban);
     }
 
@@ -15,7 +15,11 @@ public class ClassicAccount extends Account {
         return false;
     }
 
-    public boolean setInterest(double interestRate) {
+    public boolean setInterest(final double interestRate) {
+        return false;
+    }
+
+    public boolean isSavingsAccount() {
         return false;
     }
 }

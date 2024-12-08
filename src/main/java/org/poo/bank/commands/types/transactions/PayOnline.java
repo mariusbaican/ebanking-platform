@@ -6,75 +6,92 @@ import org.poo.bank.commands.Command;
 import org.poo.bank.components.Card;
 import org.poo.bank.components.TransactionData;
 import org.poo.bank.components.accounts.Account;
-import org.poo.bank.currency.Currencies;
-import org.poo.bank.currency.CurrencyExchanger;
 import org.poo.bank.database.Database;
+import org.poo.bank.database.DatabaseEntry;
 import org.poo.fileio.CommandInput;
 
-public class PayOnline extends Command {
-    public PayOnline(CommandInput commandInput) {
+public final class PayOnline extends Command {
+    public PayOnline(final CommandInput commandInput) {
         super(commandInput);
     }
 
     @Override
     public void run() {
-        if (Database.getInstance().getCard(commandInput.getCardNumber()) == null) {
-            output.put("command", "payOnline");
+        DatabaseEntry entry = Database.getInstance().getEntryByCard(commandInput.getCardNumber());
+        if (entry == null) {
+            ObjectNode commandOutput = Bank.getInstance().createObjectNode();
+            commandOutput.put("command", "payOnline");
 
-            ObjectNode commandOutput = Bank.getInstance().getObjectMapper().createObjectNode();
-            commandOutput.put("description", "Card not found");
-            commandOutput.put("timestamp", commandInput.getTimestamp());
-
-            output.put("output", commandOutput);
+            output.put("description", "Card not found");
             output.put("timestamp", commandInput.getTimestamp());
-            Bank.getInstance().getOutput().add(output.deepCopy());
+
+            commandOutput.put("output", output);
+            commandOutput.put("timestamp", commandInput.getTimestamp());
+            Bank.getInstance().addToOutput(commandOutput);
             return;
         }
 
-        Card card = Database.getInstance().getCard(commandInput.getCardNumber());
-        Account account = Database.getInstance().getAccount(card.getIban());
-        double adjustedPrice = commandInput.getAmount() * CurrencyExchanger.getRate(
-                new Currencies<>(commandInput.getCurrency(), account.getCurrency()));
+        Card card = entry.getCard(commandInput.getCardNumber());
+        Account account = entry.getAccount(card.getIban());
 
         if (card.getStatus() == Card.CardStatus.FROZEN) {
             output.put("description", "The card is frozen");
             output.put("timestamp", commandInput.getTimestamp());
-            TransactionData data = new TransactionData(output.deepCopy(), account.getIban());
-            Database.getInstance().getUser(account.getOwner()).addTransaction(data);
+
+            TransactionData data = new TransactionData(output, account.getIban());
+            entry.getUser().addTransaction(data);
+
             return;
         }
 
-        if (account.getBalance() < adjustedPrice) {
+        double sumPaid = account.pay(commandInput.getAmount(), commandInput.getCurrency());
+        if (Double.compare(sumPaid, 0.0) == 0) {
             output.put("timestamp", commandInput.getTimestamp());
             output.put("description", "Insufficient funds");
-            TransactionData data = new TransactionData(output.deepCopy(), account.getIban());
-            Database.getInstance().getUser(account.getOwner()).addTransaction(data);
+
+            TransactionData data = new TransactionData(output, account.getIban());
+            entry.getUser().addTransaction(data);
+
             return;
         }
 
-        account.setBalance(account.getBalance() - adjustedPrice);
-
         if (account.getBalance() <= account.getMinBalance()) {
-            output.put("description", "You have reached the minimum amount of funds, the card will be frozen");
+            output.put("description",
+                    "You have reached the minimum amount of funds, the card will be frozen");
             output.put("timestamp", commandInput.getTimestamp());
 
-            TransactionData data = new TransactionData(output.deepCopy(), account.getIban());
-            Database.getInstance().getUser(account.getOwner()).addTransaction(data);
+            TransactionData data = new TransactionData(output, account.getIban());
+            entry.getUser().addTransaction(data);
 
             card.setStatus(Card.CardStatus.FROZEN);
+
             return;
         }
 
         output.put("timestamp", commandInput.getTimestamp());
         output.put("description", "Card payment");
-        output.put("amount", adjustedPrice);
+        output.put("amount", sumPaid);
         output.put("commerciant", commandInput.getCommerciant());
 
         TransactionData data = new TransactionData(output.deepCopy(), account.getIban());
-        Database.getInstance().getUser(account.getOwner()).addTransaction(data);
+        entry.getUser().addTransaction(data);
 
-        if (card.isOneTime())
+        if (card.isOneTime()) {
+            TransactionData deleteCard =
+                    new TransactionData(
+                            card.destroyOutput(commandInput.getTimestamp()),
+                            card.getIban());
+            entry.getUser().addTransaction(deleteCard);
             Database.getInstance().removeCard(commandInput.getCardNumber());
+
+            Card newCard = new Card(card.getIban(), true);
+            entry.addCard(newCard);
+            TransactionData createCard =
+                    new TransactionData(
+                            newCard.createOutput(commandInput.getTimestamp()),
+                            newCard.getIban());
+            entry.getUser().addTransaction(createCard);
+        }
     }
 
 

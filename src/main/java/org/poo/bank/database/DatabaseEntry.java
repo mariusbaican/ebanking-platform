@@ -10,19 +10,20 @@ import org.poo.bank.components.accounts.Account;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Data
-public class DatabaseEntry {
+public final class DatabaseEntry {
     private User user;
     private Map<String, Account> accounts;
-    private ArrayList<String> accountIbans; // This is garbage
+    private List<String> accountIbans; // This is garbage
     private Map<String, Card> cards;
-    private ArrayList<String> cardNumbers;// This is garbage
-    // Why are they garbage you may ask? Because if the order is wrong the tests fail
-    // and maintaining HashMap.values() sorted properly is next to impossible :D
+    private List<String> cardNumbers; // This is garbage
+    // The garbage is here to keep the accounts and cards sorted in chronological
+    // order to pass the tests. You might not like it, I don't either :/
 
-    public DatabaseEntry(User user) {
+    public DatabaseEntry(final User user) {
         this.user = user;
         accounts = new HashMap<>();
         accountIbans = new ArrayList<>();
@@ -30,32 +31,40 @@ public class DatabaseEntry {
         cardNumbers = new ArrayList<>();
     }
 
-    public void addAccount(Account account) {
+    public void addAccount(final Account account) {
         accounts.putIfAbsent(account.getIban(), account);
         accountIbans.add(account.getIban());
     }
 
-    public void removeAccount(String iban) {
+    public void removeAccount(final String iban) {
         accounts.remove(iban);
         accountIbans.remove(iban);
     }
 
-    public void addCard(Card card) {
+    public Account getAccount(final String iban) {
+        return accounts.get(iban);
+    }
+
+    public void addCard(final Card card) {
         cards.putIfAbsent(card.getCardNumber(), card);
         cardNumbers.add(card.getCardNumber());
     }
 
-    public void removeCard(String cardNumber) {
+    public void removeCard(final String cardNumber) {
         cards.remove(cardNumber);
         cardNumbers.remove(cardNumber);
     }
 
+    public Card getCard(final String cardNumber) {
+        return cards.get(cardNumber);
+    }
+
     public ObjectNode toJson() {
-        ObjectNode output = Bank.getInstance().getObjectMapper().createObjectNode();
+        ObjectNode output = Bank.getInstance().createObjectNode();
         output.put("firstName", user.getFirstName());
         output.put("lastName", user.getLastName());
         output.put("email", user.getEmail());
-        ArrayNode accountsArray = Bank.getInstance().getObjectMapper().createArrayNode();
+        ArrayNode accountsArray = Bank.getInstance().createArrayNode();
         for (String iban : accountIbans) {
             accountsArray.add(accounts.get(iban).toJson());
         }
@@ -63,7 +72,7 @@ public class DatabaseEntry {
         return output;
     }
 
-    public void removeAccountCards(String iban) {
+    public void removeAccountCards(final String iban) {
         for (Card card : cards.values()) {
             if (card.getIban().equals(iban)) {
                 cards.remove(card.getIban());

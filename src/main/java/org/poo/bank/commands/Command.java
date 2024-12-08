@@ -1,19 +1,16 @@
 package org.poo.bank.commands;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.bank.Bank;
 import org.poo.fileio.CommandInput;
 
 public abstract class Command {
-    protected CommandInput commandInput;
-    protected ObjectMapper mapper;
-    protected ObjectNode output;
+    protected final CommandInput commandInput;
+    protected final ObjectNode output;
 
-    public Command(CommandInput commandInput) {
+    public Command(final CommandInput commandInput) {
         this.commandInput = commandInput;
-        this.mapper = Bank.getInstance().getObjectMapper();
-        output = mapper.createObjectNode();
+        output = Bank.getInstance().createObjectNode();
     }
 
     public abstract void run();

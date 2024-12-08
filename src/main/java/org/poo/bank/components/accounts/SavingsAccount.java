@@ -4,12 +4,12 @@ import lombok.Data;
 import org.poo.fileio.CommandInput;
 
 @Data
-public class SavingsAccount extends Account {
+public final class SavingsAccount extends Account {
     private double interestRate;
 
     public SavingsAccount() { }
 
-    public SavingsAccount(CommandInput commandInput, String iban) {
+    public SavingsAccount(final CommandInput commandInput, final String iban) {
         super(commandInput, iban);
         interestRate = commandInput.getInterestRate();
     }
@@ -19,8 +19,12 @@ public class SavingsAccount extends Account {
         return true;
     }
 
-    public boolean setInterest(double interestRate) {
+    public boolean setInterest(final double interestRate) {
         this.interestRate = interestRate;
+        return true;
+    }
+
+    public boolean isSavingsAccount() {
         return true;
     }
 }

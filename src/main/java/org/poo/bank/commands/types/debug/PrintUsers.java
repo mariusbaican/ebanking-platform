@@ -8,21 +8,24 @@ import org.poo.bank.database.Database;
 import org.poo.bank.database.DatabaseEntry;
 import org.poo.fileio.CommandInput;
 
-public class PrintUsers extends Command {
-    public PrintUsers(CommandInput commandInput) {
+public final class PrintUsers extends Command {
+    public PrintUsers(final CommandInput commandInput) {
         super(commandInput);
     }
 
     @Override
     public void run() {
         output.put("command", "printUsers");
-        ArrayNode userArray = Bank.getInstance().getObjectMapper().createArrayNode();
-        for (DatabaseEntry entry : Database.getInstance().getDb()) {
+
+        ArrayNode userArray = Bank.getInstance().createArrayNode();
+        for (String user: Database.getInstance().getUsers()) {
+            DatabaseEntry entry = Database.getInstance().getEntryByUser(user);
             ObjectNode userNode = entry.toJson();
             userArray.add(userNode);
         }
+
         output.put("output", userArray);
         output.put("timestamp", commandInput.getTimestamp());
-        Bank.getInstance().getOutput().add(output);
+        Bank.getInstance().addToOutput(output);
     }
 }

@@ -3,7 +3,7 @@ package org.poo.bank.currency;
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
-public class Currencies<A, B> {
+public final class Currencies<A, B> {
 
     private final A a;
     private final B b;

@@ -52,7 +52,6 @@ public final class Main {
 
         for (File file : sortedFiles) {
             String filepath = CheckerConstants.OUT_PATH + file.getName();
-            System.out.println(filepath); //TODO REMOVE
             File out = new File(filepath);
             boolean isCreated = out.createNewFile();
             if (isCreated) {
@@ -89,9 +88,8 @@ public final class Main {
      * @return the extracted numbers
      */
     public static int fileConsumer(final File file) {
-        return Integer.parseInt(
-                file.getName()
-                        .replaceAll(CheckerConstants.DIGIT_REGEX, CheckerConstants.EMPTY_STR)
-        );
+        String fileName = file.getName()
+                .replaceAll(CheckerConstants.DIGIT_REGEX, CheckerConstants.EMPTY_STR);
+        return Integer.parseInt(fileName.substring(0, 2));
     }
 }

@@ -4,11 +4,23 @@ import org.poo.bank.commands.types.debug.PrintTransactions;
 import org.poo.bank.commands.types.debug.PrintUsers;
 import org.poo.bank.commands.types.reports.Report;
 import org.poo.bank.commands.types.reports.SpendingReport;
-import org.poo.bank.commands.types.transactions.*;
+import org.poo.bank.commands.types.transactions.AddAccount;
+import org.poo.bank.commands.types.transactions.AddFunds;
+import org.poo.bank.commands.types.transactions.AddInterest;
+import org.poo.bank.commands.types.transactions.ChangeInterestRate;
+import org.poo.bank.commands.types.transactions.CheckCardStatus;
+import org.poo.bank.commands.types.transactions.CreateCard;
+import org.poo.bank.commands.types.transactions.DeleteAccount;
+import org.poo.bank.commands.types.transactions.DeleteCard;
+import org.poo.bank.commands.types.transactions.PayOnline;
+import org.poo.bank.commands.types.transactions.SendMoney;
+import org.poo.bank.commands.types.transactions.SetAlias;
+import org.poo.bank.commands.types.transactions.SetMinimumBalance;
+import org.poo.bank.commands.types.transactions.SplitPayment;
 import org.poo.fileio.CommandInput;
 
-public abstract class CommandBuilder {
-    public static Command build(CommandInput commandInput) {
+public final class CommandFactory {
+    public static Command generate(final CommandInput commandInput) {
         switch (commandInput.getCommand()) {
             case "printUsers" -> {
                 return new PrintUsers(commandInput);
@@ -50,7 +62,7 @@ public abstract class CommandBuilder {
                 return new SetAlias(commandInput);
             }
             case "splitPayment" -> {
-                return new SplitPayment(commandInput); //TODO IMPLEMENT CURRENCY EXCHANGE FIRST
+                return new SplitPayment(commandInput);
             }
             case "addInterest" -> {
                 return new AddInterest(commandInput);
@@ -65,7 +77,10 @@ public abstract class CommandBuilder {
                 return new SpendingReport(commandInput);
             }
             default ->
-                throw new IllegalArgumentException("Unknown transaction: " + commandInput.getCommand());
+                throw new IllegalArgumentException("Unknown transaction: "
+                                                    + commandInput.getCommand());
         }
     }
+
+    private CommandFactory() { }
 }

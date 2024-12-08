@@ -7,39 +7,42 @@ import org.poo.bank.components.Card;
 import org.poo.bank.components.TransactionData;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.database.Database;
+import org.poo.bank.database.DatabaseEntry;
 import org.poo.fileio.CommandInput;
 
-public class CheckCardStatus extends Command {
-    public CheckCardStatus(CommandInput commandInput) {
+public final class CheckCardStatus extends Command {
+    public CheckCardStatus(final CommandInput commandInput) {
         super(commandInput);
     }
 
     @Override
     public void run() {
-        if (Database.getInstance().getCard(commandInput.getCardNumber()) == null) {
-            ObjectNode commandOutput = Bank.getInstance().getObjectMapper().createObjectNode();
+        DatabaseEntry entry = Database.getInstance().getEntryByCard(commandInput.getCardNumber());
+        if (entry == null) {
+            ObjectNode commandOutput = Bank.getInstance().createObjectNode();
             commandOutput.put("command", "checkCardStatus");
             output.put("description", "Card not found");
             output.put("timestamp", commandInput.getTimestamp());
             commandOutput.put("output", output);
             commandOutput.put("timestamp", commandInput.getTimestamp());
-            Bank.getInstance().getOutput().add(commandOutput);
+            Bank.getInstance().addToOutput(commandOutput);
             return;
         }
 
-        Card card = Database.getInstance().getCard(commandInput.getCardNumber());
-        Account account = Database.getInstance().getAccount(card.getIban());
-        if (account.getBalance() <= account.getMinBalance()) {
-            output.put("description", "You have reached the minimum amount of funds, the card will be frozen");
-            output.put("timestamp", commandInput.getTimestamp());
-            TransactionData data = new TransactionData(output.deepCopy(), account.getIban());
-            Database.getInstance().getUser(account.getOwner()).addTransaction(data);
-            card.setStatus(Card.CardStatus.FROZEN);
-            return;
-        } else {
-            //card.setStatus(Card.CardStatus.ACTIVE);
-            return;
+        Card card = entry.getCard(commandInput.getCardNumber());
+        Account account = entry.getAccount(card.getIban());
+
+        if (card.getStatus() == Card.CardStatus.ACTIVE) {
+            if (account.getBalance() <= account.getMinBalance()) {
+                output.put("description",
+                        "You have reached the minimum amount of funds, the card will be frozen");
+                output.put("timestamp", commandInput.getTimestamp());
+
+                TransactionData data = new TransactionData(output.deepCopy(), account.getIban());
+                entry.getUser().addTransaction(data);
+
+                card.setStatus(Card.CardStatus.FROZEN);
+            }
         }
-        //TODO CONVERT OUTPUT TO JSON
     }
 }

@@ -10,92 +10,87 @@ import org.poo.fileio.UserInput;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Data
-public class Database {
-    public static Database database = new Database();
+public final class Database {
+    public static final Database DATABASE = new Database();
 
-    private final ArrayList<DatabaseEntry> db;
-    private Map<String, String> aliases;
+    private final Map<String, DatabaseEntry> db;
+    // This is here to keep the users sorted in chronological order
+    // to pass the tests. You might not like it, I don't either :/
+    private final List<String> users;
+    private final Map<String, String> aliases;
 
     private Database() {
-        db = new ArrayList<>();
+        db = new HashMap<>();
         aliases = new HashMap<>();
+        users = new ArrayList<>();
     }
 
     public void reset() {
         db.clear();
         aliases.clear();
+        users.clear();
     }
 
-    public void addAll(ObjectInput input, ObjectMapper objectMapper) {
+    public void addAll(final ObjectInput input, final ObjectMapper objectMapper) {
         for (UserInput user : input.getUsers()) {
-            db.add(new DatabaseEntry(new User(user, objectMapper)));
+            db.put(user.getEmail(), new DatabaseEntry(new User(user, objectMapper)));
+            users.add(user.getEmail());
         }
     }
 
     public static Database getInstance() {
-        return database;
+        return DATABASE;
     }
 
-    public void addAlias(String alias, String iban) {
-        if (getAccount(iban) != null)
+    public void addAlias(final String alias, final String iban) {
+        if (getAccount(iban) != null) {
             aliases.putIfAbsent(alias, iban);
-    }
-
-    public boolean addAccount(String email, Account account) {
-        for (DatabaseEntry entry : db) {
-            if (entry.getUser().getEmail().equals(email)) {
-                entry.addAccount(account);
-                return true;
-            }
         }
-        return false;
     }
 
-    public boolean removeAccount(String iban) {
-        for (DatabaseEntry entry : db) {
+    public void addAccount(final String email, final Account account) {
+        DatabaseEntry entry = db.getOrDefault(email, null);
+        if (entry == null) {
+            return;
+        }
+        entry.addAccount(account);
+    }
+
+    public void removeAccount(final String iban) {
+        for (DatabaseEntry entry : db.values()) {
             if (entry.getAccounts().getOrDefault(iban, null) != null) {
                 entry.removeAccountCards(iban);
                 entry.removeAccount(iban);
-                return true;
             }
         }
-        return false;
     }
 
-    public boolean removeCard(String cardNumber) {
-        for (DatabaseEntry entry : db) {
+    public void removeCard(final String cardNumber) {
+        for (DatabaseEntry entry : db.values()) {
             if (entry.getCards().getOrDefault(cardNumber, null) != null) {
                 entry.removeCard(cardNumber);
-                return true;
             }
         }
-        return false;
     }
 
-    public boolean addCard(String email, Card card) {
-        for (DatabaseEntry entry : db) {
-            if (entry.getUser().getEmail().equals(email)) {
-                entry.addCard(card);
-                return true;
-            }
+    public void addCard(final String email, final Card card) {
+        DatabaseEntry entry = db.getOrDefault(email, null);
+        if (entry == null) {
+            return;
         }
-        return false;
+        entry.addCard(card);
     }
 
-    public DatabaseEntry getEntryByUser(String email) {
-        for (DatabaseEntry entry : db) {
-            if (entry.getUser().getEmail().equals(email)) {
-                return entry;
-            }
-        }
-        return null;
+    public DatabaseEntry getEntryByUser(final String email) {
+        return db.getOrDefault(email, null);
     }
 
-    public DatabaseEntry getEntryByCard(String cardNumber) {
-        for (DatabaseEntry entry : db) {
+    public DatabaseEntry getEntryByCard(final String cardNumber) {
+        for (DatabaseEntry entry : db.values()) {
             if (entry.getCards().getOrDefault(cardNumber, null) != null) {
                 return entry;
             }
@@ -103,12 +98,13 @@ public class Database {
         return null;
     }
 
-    public DatabaseEntry getEntryByAccount(String input) {
+    public DatabaseEntry getEntryByAccount(final String input) {
         //This allows for the use of aliases instead of account iban
         String actualIban = input;
-        if (aliases.containsKey(input))
+        if (aliases.containsKey(input)) {
             actualIban = aliases.get(input);
-        for (DatabaseEntry entry : db) {
+        }
+        for (DatabaseEntry entry : db.values()) {
             if (entry.getAccounts().getOrDefault(actualIban, null) != null) {
                 return entry;
             }
@@ -116,21 +112,21 @@ public class Database {
         return null;
     }
 
-    public User getUser(String email) {
-        for (DatabaseEntry entry : db) {
-            if (entry.getUser().getEmail().equals(email)) {
-                return entry.getUser();
-            }
+    private User getUser(final String email) {
+        DatabaseEntry entry = db.getOrDefault(email, null);
+        if (entry == null) {
+            return null;
         }
-        return null;
+        return entry.getUser();
     }
 
-    public Account getAccount(String input) {
+    private Account getAccount(final String input) {
         //This allows for the use of aliases instead of account iban
         String actualIban = input;
-        if (aliases.containsKey(input))
+        if (aliases.containsKey(input)) {
             actualIban = aliases.get(input);
-        for (DatabaseEntry entry : db) {
+        }
+        for (DatabaseEntry entry : db.values()) {
             if (entry.getAccounts().getOrDefault(actualIban, null) != null) {
                 return entry.getAccounts().get(actualIban);
             }
@@ -138,8 +134,8 @@ public class Database {
         return null;
     }
 
-    public Card getCard(String cardNumber) {
-        for (DatabaseEntry entry : db) {
+    private Card getCard(final String cardNumber) {
+        for (DatabaseEntry entry : db.values()) {
             if (entry.getCards().getOrDefault(cardNumber, null) != null) {
                 return entry.getCards().get(cardNumber);
             }

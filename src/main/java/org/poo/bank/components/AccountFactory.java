@@ -6,8 +6,8 @@ import org.poo.bank.components.accounts.SavingsAccount;
 import org.poo.fileio.CommandInput;
 import org.poo.utils.Utils;
 
-public class AccountBuilder {
-    public static Account build(CommandInput commandInput) {
+public final class AccountFactory {
+    public static Account build(final CommandInput commandInput) {
         String iban = Utils.generateIBAN();
         switch (commandInput.getAccountType()) {
             case "savings" -> {
@@ -17,7 +17,10 @@ public class AccountBuilder {
                 return new ClassicAccount(commandInput, iban);
             }
             default ->
-                throw new IllegalArgumentException("Unknown account type: " + commandInput.getAccountType());
+                throw new IllegalArgumentException("Unknown account type: "
+                        + commandInput.getAccountType());
         }
     }
+
+    private AccountFactory() { }
 }
