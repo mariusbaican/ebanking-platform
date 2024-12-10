@@ -4,17 +4,24 @@ import org.poo.bank.components.accounts.Account;
 import org.poo.bank.components.accounts.ClassicAccount;
 import org.poo.bank.components.accounts.SavingsAccount;
 import org.poo.fileio.CommandInput;
-import org.poo.utils.Utils;
 
+/**
+ * This static class is used to generate every account type.
+ * It implements the factory design pattern.
+ */
 public final class AccountFactory {
+    /**
+     * This method generates an Account based on a given input.
+     * @param commandInput The general input of a command.
+     * @return An instance of the requested accountType.
+     */
     public static Account build(final CommandInput commandInput) {
-        String iban = Utils.generateIBAN();
         switch (commandInput.getAccountType()) {
             case "savings" -> {
-                return new SavingsAccount(commandInput, iban);
+                return new SavingsAccount(commandInput);
             }
             case "classic" -> {
-                return new ClassicAccount(commandInput, iban);
+                return new ClassicAccount(commandInput);
             }
             default ->
                 throw new IllegalArgumentException("Unknown account type: "

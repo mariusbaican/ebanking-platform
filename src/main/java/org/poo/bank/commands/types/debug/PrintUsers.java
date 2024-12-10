@@ -1,30 +1,31 @@
 package org.poo.bank.commands.types.debug;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
-import org.poo.bank.database.Database;
-import org.poo.bank.database.DatabaseEntry;
 import org.poo.fileio.CommandInput;
 
+/**
+ * This subclass of Command has the purpose of executing a printUsers request.
+ */
 public final class PrintUsers extends Command {
+    /**
+     * This constructor calls the Command superclass constructor.
+     * It stores the commandInput for further use during execution.
+     * @param commandInput The input for the requested command.
+     */
     public PrintUsers(final CommandInput commandInput) {
         super(commandInput);
     }
 
+    /**
+     * This method is used to execute a printUsers request.
+     * It adds the result to the global JSON output.
+     */
     @Override
     public void run() {
         output.put("command", "printUsers");
 
-        ArrayNode userArray = Bank.getInstance().createArrayNode();
-        for (String user: Database.getInstance().getUsers()) {
-            DatabaseEntry entry = Database.getInstance().getEntryByUser(user);
-            ObjectNode userNode = entry.toJson();
-            userArray.add(userNode);
-        }
-
-        output.put("output", userArray);
+        output.put("output", Bank.getInstance().getDatabase().toJson());
         output.put("timestamp", commandInput.getTimestamp());
         Bank.getInstance().addToOutput(output);
     }

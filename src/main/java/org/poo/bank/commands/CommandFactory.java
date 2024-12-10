@@ -3,7 +3,7 @@ package org.poo.bank.commands;
 import org.poo.bank.commands.types.debug.PrintTransactions;
 import org.poo.bank.commands.types.debug.PrintUsers;
 import org.poo.bank.commands.types.reports.Report;
-import org.poo.bank.commands.types.reports.SpendingReport;
+import org.poo.bank.commands.types.reports.SpendingsReport;
 import org.poo.bank.commands.types.transactions.AddAccount;
 import org.poo.bank.commands.types.transactions.AddFunds;
 import org.poo.bank.commands.types.transactions.AddInterest;
@@ -19,7 +19,18 @@ import org.poo.bank.commands.types.transactions.SetMinimumBalance;
 import org.poo.bank.commands.types.transactions.SplitPayment;
 import org.poo.fileio.CommandInput;
 
+/**
+ * This static class is used to generate every command request.
+ * It implements the factory design pattern.
+ */
 public final class CommandFactory {
+    private CommandFactory() { }
+
+    /**
+     * This method generates a command based on a given input.
+     * @param commandInput The general input of a command.
+     * @return A command subclass that fulfills the desired task.
+     */
     public static Command generate(final CommandInput commandInput) {
         switch (commandInput.getCommand()) {
             case "printUsers" -> {
@@ -74,13 +85,11 @@ public final class CommandFactory {
                 return new Report(commandInput);
             }
             case "spendingsReport" -> {
-                return new SpendingReport(commandInput);
+                return new SpendingsReport(commandInput);
             }
             default ->
                 throw new IllegalArgumentException("Unknown transaction: "
                                                     + commandInput.getCommand());
         }
     }
-
-    private CommandFactory() { }
 }
