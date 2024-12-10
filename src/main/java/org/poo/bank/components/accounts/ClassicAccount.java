@@ -1,15 +1,15 @@
 package org.poo.bank.components.accounts;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.poo.fileio.CommandInput;
 
 /**
  * This class stores a ClassicAccount's data.
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public final class ClassicAccount extends Account {
-    public ClassicAccount() { }
-
     /**
      * This constructor creates a ClassicAccount based on a command's input.
      * @param commandInput The desired account information.

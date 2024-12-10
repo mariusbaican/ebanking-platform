@@ -78,6 +78,8 @@ public final class Database {
         entry.addAccount(account);
     }
 
+    // This may be unused, but it's here for the sake of having
+    // add, remove and get methods for everything
     /**
      * This method is used to remove an Account from the Database.
      * @param iban The IBAN of the Account to be removed.
@@ -90,6 +92,8 @@ public final class Database {
         }
     }
 
+    // This may be unused, but it's here for the sake of having
+    // add, remove and get methods for everything
     /**
      * This method is used to add a Card to the Database.
      * @param email The email of the Card owner.
@@ -191,6 +195,8 @@ public final class Database {
         return null;
     }
 
+    // This may be unused, but it's here for the sake of having
+    // add, remove and get methods for everything
     /**
      * This method pulls a Card from the Database.
      * @param cardNumber The cardNumber of the requested Card.

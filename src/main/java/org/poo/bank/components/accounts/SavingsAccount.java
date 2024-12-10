@@ -1,17 +1,16 @@
 package org.poo.bank.components.accounts;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.poo.fileio.CommandInput;
 
 /**
  * This class stores a SavingsAccount's data.
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public final class SavingsAccount extends Account {
     private double interestRate;
-
-    public SavingsAccount() { }
-
     /**
      * This constructor creates a SavingsAccount based on a command's input.
      * @param commandInput The desired account information.

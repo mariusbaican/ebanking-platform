@@ -98,7 +98,9 @@ public final class Card {
      */
     public ObjectNode destructionOutput(final int timestamp) {
         DatabaseEntry entry = Bank.getInstance().getDatabase().getEntryByCard(cardNumber);
-
+        if (entry == null) {
+            return null;
+        }
         ObjectNode output = Bank.getInstance().createObjectNode();
         output.put("timestamp", timestamp);
         output.put("description", "The card has been destroyed");

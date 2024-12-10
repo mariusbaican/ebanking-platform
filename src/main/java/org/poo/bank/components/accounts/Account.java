@@ -114,6 +114,9 @@ public abstract class Account {
         for (String cardNumber : Bank.getInstance().getDatabase()
                 .getEntryByUser(owner).getCardNumbers()) {
             DatabaseEntry entry = Bank.getInstance().getDatabase().getEntryByCard(cardNumber);
+            if (entry == null) {
+                return null;
+            }
             Card card = entry.getCard(cardNumber);
             if (card.getIban().equals(iban)) {
                 cardArray.add(card.toJson());
