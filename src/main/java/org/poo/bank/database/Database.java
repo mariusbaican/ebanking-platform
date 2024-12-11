@@ -8,10 +8,9 @@ import org.poo.bank.components.accounts.Account;
 import org.poo.bank.components.User;
 import org.poo.fileio.UserInput;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
+
 
 /**
  * This class is used to store and access the data of the Bank.
@@ -20,18 +19,14 @@ import java.util.Map;
 @Data
 public final class Database {
     private final Map<String, DatabaseEntry> db;
-    // This is here to keep the users sorted in chronological order
-    // to pass the tests. You might not like it, I don't either :/
-    private final List<String> users;
     private final Map<String, String> aliases;
 
     /**
      * This constructor initializes the data structures.
      */
     public Database() {
-        db = new HashMap<>();
-        aliases = new HashMap<>();
-        users = new ArrayList<>();
+        db = new LinkedHashMap<>();
+        aliases = new LinkedHashMap<>();
     }
 
     /**
@@ -40,7 +35,6 @@ public final class Database {
     public void reset() {
         db.clear();
         aliases.clear();
-        users.clear();
     }
 
     /**
@@ -50,7 +44,6 @@ public final class Database {
     public void addUsers(final UserInput[] userInput) {
         for (UserInput user : userInput) {
             db.put(user.getEmail(), new DatabaseEntry(new User(user)));
-            users.add(user.getEmail());
         }
     }
 
@@ -217,8 +210,7 @@ public final class Database {
      */
     public ArrayNode toJson() {
         ArrayNode entries = Bank.getInstance().createArrayNode();
-        for (String user : users) {
-            DatabaseEntry entry = getEntryByUser(user);
+        for (DatabaseEntry entry : db.values()) {
             entries.add(entry.toJson());
         }
         return entries;

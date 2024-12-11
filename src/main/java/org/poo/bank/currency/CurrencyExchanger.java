@@ -12,12 +12,12 @@ public final class CurrencyExchanger {
     public static final HashMap<Currencies<String, String>, Double> EXCHANGE_RATES =
             new HashMap<>();
 
-    private CurrencyExchanger() { }
+    public CurrencyExchanger() { }
 
     /**
      * This method is used to reset the EXCHANGE_RATES Map.
      */
-    public static void reset() {
+    public void reset() {
         EXCHANGE_RATES.clear();
     }
 
@@ -26,7 +26,7 @@ public final class CurrencyExchanger {
      * Additionally, it computes all the rates that are possible to be determined.
      * @param input The desired ExchangeInput.
      */
-    public static void addExchangeRate(final ExchangeInput input) {
+    public void addExchangeRate(final ExchangeInput input) {
         EXCHANGE_RATES.putIfAbsent(new Currencies<>(input.getFrom(), input.getTo()),
                                     input.getRate());
         EXCHANGE_RATES.putIfAbsent(new Currencies<>(input.getTo(), input.getFrom()),
@@ -40,7 +40,7 @@ public final class CurrencyExchanger {
      * @param currencies A Currency tuple.
      * @param rate An exchangeRate.
      */
-    public static void addExchangeRate(final Currencies<String, String> currencies,
+    public void addExchangeRate(final Currencies<String, String> currencies,
                                        final double rate) {
         EXCHANGE_RATES.putIfAbsent(currencies, rate);
         EXCHANGE_RATES.putIfAbsent(new Currencies<>(currencies.getSecond(), currencies.getFirst()),
@@ -52,7 +52,7 @@ public final class CurrencyExchanger {
      * @param newCurrencies The Currency tuple newly added.
      * @param rate The new exchangeRate added.
      */
-    private static void computeMissingRates(final Currencies<String, String> newCurrencies,
+    private void computeMissingRates(final Currencies<String, String> newCurrencies,
                                             final double rate) {
         Map<Currencies<String, String>, Double> newRates = new HashMap<>();
 
@@ -89,7 +89,7 @@ public final class CurrencyExchanger {
      * @param currencies The currency tuple to transfer from and to.
      * @return The exchangeRate.
      */
-    public static double getRate(final Currencies<String, String> currencies) {
+    public double getRate(final Currencies<String, String> currencies) {
         if (currencies.getFirst().equals(currencies.getSecond())) {
             return 1.0;
         }

@@ -33,7 +33,7 @@ public final class PrintTransactions extends Command {
         }
 
         output.put("command", "printTransactions");
-        output.put("output", entry.getUser().transactionsToJson());
+        output.put("output", entry.transactionsToJson());
         output.put("timestamp", commandInput.getTimestamp());
         Bank.getInstance().addToOutput(output);
     }

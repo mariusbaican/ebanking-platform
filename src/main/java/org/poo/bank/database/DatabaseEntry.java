@@ -4,27 +4,37 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import org.poo.bank.Bank;
+import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
+import org.poo.bank.commands.types.transactions.transactionHistory.TransactionGroup;
 import org.poo.bank.components.Card;
 import org.poo.bank.components.User;
 import org.poo.bank.components.accounts.Account;
+import org.poo.bank.components.commerciants.Commerciant;
+import org.poo.bank.components.commerciants.CommerciantGroup;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 
 /**
  * This class stores the information of an entry within the Database.
  */
 @Data
 public final class DatabaseEntry {
-    private User user;
-    private Map<String, Account> accounts;
-    private List<String> accountIbans; // This is garbage
-    private Map<String, Card> cards;
-    private List<String> cardNumbers; // This is garbage
-    // The garbage is here to keep the accounts and cards sorted in chronological
-    // order to pass the tests. You might not like it, I don't either :/
+    private final User user;
+    private final Map<String, Account> accounts;
+    private final Map<String, Card> cards;
+    private final List<TransactionData> transactionHistory;
+
+    /**
+     * This method adds a TransactionData object to the transactionHistory.
+     * @param transactionData The TransactionData to be added.
+     */
+    public void addTransaction(final TransactionData transactionData) {
+        transactionHistory.add(transactionData);
+    }
 
     /**
      * This constructor creates a new entry based on a User.
@@ -32,10 +42,9 @@ public final class DatabaseEntry {
      */
     public DatabaseEntry(final User user) {
         this.user = user;
-        accounts = new HashMap<>();
-        accountIbans = new ArrayList<>();
-        cards = new HashMap<>();
-        cardNumbers = new ArrayList<>();
+        accounts = new LinkedHashMap<>();
+        cards = new LinkedHashMap<>();
+        transactionHistory = new ArrayList<>();
     }
 
     /**
@@ -44,7 +53,6 @@ public final class DatabaseEntry {
      */
     public void addAccount(final Account account) {
         accounts.putIfAbsent(account.getIban(), account);
-        accountIbans.add(account.getIban());
     }
 
     /**
@@ -53,7 +61,6 @@ public final class DatabaseEntry {
      */
     public void removeAccount(final String iban) {
         accounts.remove(iban);
-        accountIbans.remove(iban);
         removeAccountCards(iban);
     }
 
@@ -72,7 +79,6 @@ public final class DatabaseEntry {
      */
     public void addCard(final Card card) {
         cards.putIfAbsent(card.getCardNumber(), card);
-        cardNumbers.add(card.getCardNumber());
     }
 
     /**
@@ -81,7 +87,6 @@ public final class DatabaseEntry {
      */
     public void removeCard(final String cardNumber) {
         cards.remove(cardNumber);
-        cardNumbers.remove(cardNumber);
     }
 
     /**
@@ -103,8 +108,8 @@ public final class DatabaseEntry {
         output.put("lastName", user.getLastName());
         output.put("email", user.getEmail());
         ArrayNode accountsArray = Bank.getInstance().createArrayNode();
-        for (String iban : accountIbans) {
-            accountsArray.add(accounts.get(iban).toJson());
+        for (Account account : accounts.values()) {
+            accountsArray.add(account.toJson());
         }
         output.put("accounts", accountsArray);
         return output;
@@ -118,8 +123,68 @@ public final class DatabaseEntry {
         for (Card card : cards.values()) {
             if (card.getIban().equals(iban)) {
                 cards.remove(card.getIban());
-                cardNumbers.remove(card.getIban());
             }
         }
+    }
+
+    /**
+     * This method creates a spending report for this User instance.
+     * @param startTimestamp The startTimestamp for the report.
+     * @param endTimestamp The endTimestamp for the report.
+     * @param account The IBAN of the account for the report.
+     * @param output The ObjectNode for the report to be added into.
+     */
+    public void spendingsReportJson(final int startTimestamp, final int endTimestamp,
+                                    final String account, final ObjectNode output) {
+        TransactionGroup transactions = new TransactionGroup();
+        CommerciantGroup commerciants = new CommerciantGroup();
+        for (TransactionData transactionData : transactionHistory) {
+            int timestamp = transactionData.data().get("timestamp").asInt();
+            if (timestamp >= startTimestamp && timestamp <= endTimestamp) {
+                if (transactionData.account().equals(account)) {
+                    if (transactionData.data().has("commerciant")) {
+                        transactions.addTransaction(transactionData);
+                        commerciants.addCommerciant(
+                                new Commerciant(transactionData.data().get("commerciant").asText(),
+                                        transactionData.data().get("amount").asDouble()));
+                    }
+                }
+            }
+        }
+        output.put("transactions", transactions.toJson());
+        output.put("commerciants", commerciants.toJson());
+    }
+
+    /**
+     * This method creates a transactionReport for this User instance.
+     * @param startTimestamp The startTimestamp for the report.
+     * @param endTimestamp The endTimestamp for the report.
+     * @param account The IBAN of the account for the report.
+     * @return An ArrayNode containing all the transaction information.
+     */
+    public ArrayNode transactionsToJson(final int startTimestamp, final int endTimestamp,
+                                        final String account) {
+        TransactionGroup transactions = new TransactionGroup();
+        for (TransactionData transactionData : transactionHistory) {
+            int timestamp = transactionData.data().get("timestamp").asInt();
+            if (timestamp >= startTimestamp && timestamp <= endTimestamp) {
+                if (transactionData.account().equals(account)) {
+                    transactions.addTransaction(transactionData);
+                }
+            }
+        }
+        return transactions.toJson();
+    }
+
+    /**
+     * This method creates a transactionReport for this User instance.
+     * @return An ArrayNode containing all the transaction information.
+     */
+    public ArrayNode transactionsToJson() {
+        TransactionGroup transactions = new TransactionGroup();
+        for (TransactionData transactionData : transactionHistory) {
+            transactions.addTransaction(transactionData);
+        }
+        return transactions.toJson();
     }
 }

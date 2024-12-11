@@ -46,6 +46,6 @@ public final class DeleteCard extends Command {
         output.put("cardHolder", entry.getUser().getEmail());
         output.put("account", account.getIban());
 
-        entry.getUser().addTransaction(new TransactionData(output, account.getIban()));
+        entry.addTransaction(new TransactionData(output, account.getIban()));
     }
 }

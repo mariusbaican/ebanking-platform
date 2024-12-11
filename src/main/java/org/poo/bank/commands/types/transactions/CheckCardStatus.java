@@ -53,7 +53,7 @@ public final class CheckCardStatus extends Command {
                         "You have reached the minimum amount of funds, the card will be frozen");
                 output.put("timestamp", commandInput.getTimestamp());
 
-                entry.getUser().addTransaction(
+                entry.addTransaction(
                         new TransactionData(output.deepCopy(), account.getIban()));
 
                 card.setStatus(Card.CardStatus.FROZEN);

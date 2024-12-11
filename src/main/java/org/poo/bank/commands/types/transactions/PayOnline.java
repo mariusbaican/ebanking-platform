@@ -57,7 +57,7 @@ public final class PayOnline extends Command {
             output.put("description", "The card is frozen");
             output.put("timestamp", commandInput.getTimestamp());
 
-            entry.getUser().addTransaction(new TransactionData(output, account.getIban()));
+            entry.addTransaction(new TransactionData(output, account.getIban()));
             return;
         }
 
@@ -66,7 +66,7 @@ public final class PayOnline extends Command {
             output.put("timestamp", commandInput.getTimestamp());
             output.put("description", "Insufficient funds");
 
-            entry.getUser().addTransaction(new TransactionData(output, account.getIban()));
+            entry.addTransaction(new TransactionData(output, account.getIban()));
             return;
         }
 
@@ -75,7 +75,7 @@ public final class PayOnline extends Command {
                     "You have reached the minimum amount of funds, the card will be frozen");
             output.put("timestamp", commandInput.getTimestamp());
 
-            entry.getUser().addTransaction(new TransactionData(output, account.getIban()));
+            entry.addTransaction(new TransactionData(output, account.getIban()));
             card.setStatus(Card.CardStatus.FROZEN);
             return;
         }
@@ -85,17 +85,17 @@ public final class PayOnline extends Command {
         output.put("amount", sumPaid);
         output.put("commerciant", commandInput.getCommerciant());
 
-        entry.getUser().addTransaction(new TransactionData(output.deepCopy(), account.getIban()));
+        entry.addTransaction(new TransactionData(output.deepCopy(), account.getIban()));
 
         if (card.isOneTime()) {
-            entry.getUser().addTransaction(new TransactionData(
+            entry.addTransaction(new TransactionData(
                     card.destructionOutput(commandInput.getTimestamp()),
                     card.getIban()));
             Bank.getInstance().getDatabase().removeCard(commandInput.getCardNumber());
 
             Card newCard = new Card(card.getIban(), true);
             entry.addCard(newCard);
-            entry.getUser().addTransaction(new TransactionData(
+            entry.addTransaction(new TransactionData(
                     newCard.creationOutput(commandInput.getTimestamp()),
                     newCard.getIban()));
         }

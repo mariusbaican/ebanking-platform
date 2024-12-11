@@ -20,11 +20,14 @@ public final class Bank {
     private static final Bank BANK = new Bank();
     @Getter
     private final Database database;
+    @Getter
+    private final CurrencyExchanger currencyExchanger;
     private ObjectMapper mapper;
     private ArrayNode output;
 
     private Bank() {
         database = new Database();
+        currencyExchanger = new CurrencyExchanger();
     }
 
     /**
@@ -50,9 +53,9 @@ public final class Bank {
         Utils.resetRandom();
         database.reset();
         database.addUsers(input.getUsers());
-        CurrencyExchanger.reset();
+        currencyExchanger.reset();
         for (ExchangeInput exchangeInput : input.getExchangeRates()) {
-            CurrencyExchanger.addExchangeRate(exchangeInput);
+            currencyExchanger.addExchangeRate(exchangeInput);
         }
         for (CommandInput commandInput : input.getCommands()) {
             CommandFactory.generate(commandInput).run();

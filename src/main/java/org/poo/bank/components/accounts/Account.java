@@ -6,10 +6,10 @@ import lombok.Data;
 import org.poo.bank.Bank;
 import org.poo.bank.components.Card;
 import org.poo.bank.currency.Currencies;
-import org.poo.bank.currency.CurrencyExchanger;
-import org.poo.bank.database.DatabaseEntry;
 import org.poo.fileio.CommandInput;
 import org.poo.utils.Utils;
+
+import java.util.Objects;
 
 /**
  * This class stores and handles an Account's data.
@@ -64,7 +64,8 @@ public abstract class Account {
      */
     public final double pay(final double amount, final String requestedCurrency) {
         double adjustedAmount = amount
-                * CurrencyExchanger.getRate(new Currencies<>(requestedCurrency, this.currency));
+                * Bank.getInstance().getCurrencyExchanger()
+                .getRate(new Currencies<>(requestedCurrency, this.currency));
         if (adjustedAmount > balance) {
             return 0.0;
         }
@@ -80,7 +81,8 @@ public abstract class Account {
      */
     public final double receive(final double amount, final String requestedCurrency) {
         double adjustedAmount = amount
-                * CurrencyExchanger.getRate(new Currencies<>(requestedCurrency, this.currency));
+                * Bank.getInstance().getCurrencyExchanger()
+                .getRate(new Currencies<>(requestedCurrency, this.currency));
         balance += adjustedAmount;
         return adjustedAmount;
     }
@@ -93,7 +95,8 @@ public abstract class Account {
      */
     public final double canAfford(final double amount, final String requestedCurrency) {
         double adjustedAmount = amount
-                * CurrencyExchanger.getRate(new Currencies<>(requestedCurrency, this.currency));
+                * Bank.getInstance().getCurrencyExchanger()
+                .getRate(new Currencies<>(requestedCurrency, this.currency));
         if (Double.compare(balance, adjustedAmount) >= 0) {
             return adjustedAmount;
         }
@@ -111,13 +114,8 @@ public abstract class Account {
         output.put("currency", currency);
         output.put("type", accountType);
         ArrayNode cardArray = Bank.getInstance().createArrayNode();
-        for (String cardNumber : Bank.getInstance().getDatabase()
-                .getEntryByUser(owner).getCardNumbers()) {
-            DatabaseEntry entry = Bank.getInstance().getDatabase().getEntryByCard(cardNumber);
-            if (entry == null) {
-                return null;
-            }
-            Card card = entry.getCard(cardNumber);
+        for (Card card : Objects.requireNonNull(Bank.getInstance()
+                .getDatabase().getEntryByAccount(iban)).getCards().values()) {
             if (card.getIban().equals(iban)) {
                 cardArray.add(card.toJson());
             }

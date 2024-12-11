@@ -44,7 +44,7 @@ public final class DeleteAccount extends Command {
                         "Account couldn't be deleted - there are funds remaining");
                 output.put("timestamp", commandInput.getTimestamp());
 
-                entry.getUser().addTransaction(
+                entry.addTransaction(
                         new TransactionData(output, commandInput.getAccount()));
                 foundError = true;
             }

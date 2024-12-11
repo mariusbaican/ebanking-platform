@@ -56,7 +56,7 @@ public final class SendMoney extends Command {
             output.put("timestamp", commandInput.getTimestamp());
             output.put("description", "Insufficient funds");
 
-            senderEntry.getUser().addTransaction(
+            senderEntry.addTransaction(
                     new TransactionData(output.deepCopy(), senderAccount.getIban()));
 
             return;
@@ -82,7 +82,7 @@ public final class SendMoney extends Command {
         TransactionData receiverData =
                 new TransactionData(output.deepCopy(), receiverAccount.getIban());
 
-        senderEntry.getUser().addTransaction(senderData);
-        receiverEntry.getUser().addTransaction(receiverData);
+        senderEntry.addTransaction(senderData);
+        receiverEntry.addTransaction(receiverData);
     }
 }

@@ -78,7 +78,7 @@ public final class SplitPayment extends Command {
             if (poorAccount == null) {
                 account.pay(price, commandInput.getCurrency());
             }
-            Bank.getInstance().getDatabase().getEntryByUser(account.getOwner()).getUser()
+            Bank.getInstance().getDatabase().getEntryByUser(account.getOwner())
                     .addTransaction(new TransactionData(output.deepCopy(), account.getIban()));
         }
     }

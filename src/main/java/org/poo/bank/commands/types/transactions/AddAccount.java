@@ -41,6 +41,6 @@ public final class AddAccount extends Command {
         output.put("timestamp", commandInput.getTimestamp());
         output.put("description", "New account created");
 
-        entry.getUser().addTransaction(new TransactionData(output, account.getIban()));
+        entry.addTransaction(new TransactionData(output, account.getIban()));
     }
 }

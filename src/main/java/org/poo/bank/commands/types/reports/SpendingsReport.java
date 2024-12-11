@@ -64,7 +64,7 @@ public final class SpendingsReport extends Command {
         commandOutput.put("balance", account.getBalance());
         commandOutput.put("currency", account.getCurrency());
 
-        entry.getUser().spendingsReportJson(commandInput.getStartTimestamp(),
+        entry.spendingsReportJson(commandInput.getStartTimestamp(),
                 commandInput.getEndTimestamp(), commandInput.getAccount(), commandOutput);
         spendingReport.put("output", commandOutput);
         spendingReport.put("timestamp", commandInput.getTimestamp());

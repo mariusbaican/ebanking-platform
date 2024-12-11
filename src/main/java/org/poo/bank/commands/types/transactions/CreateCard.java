@@ -61,6 +61,6 @@ public final class CreateCard extends Command {
         output.put("cardHolder", commandInput.getEmail());
         output.put("account", commandInput.getAccount());
 
-        entry.getUser().addTransaction(new TransactionData(output, commandInput.getAccount()));
+        entry.addTransaction(new TransactionData(output, commandInput.getAccount()));
     }
 }

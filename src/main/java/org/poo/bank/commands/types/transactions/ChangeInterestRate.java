@@ -55,7 +55,7 @@ public final class ChangeInterestRate extends Command {
                     "Interest rate of the account changed to " + commandInput.getInterestRate());
             output.put("timestamp", commandInput.getTimestamp());
 
-            entry.getUser().addTransaction(new TransactionData(output, commandInput.getAccount()));
+            entry.addTransaction(new TransactionData(output, commandInput.getAccount()));
         }
     }
 }

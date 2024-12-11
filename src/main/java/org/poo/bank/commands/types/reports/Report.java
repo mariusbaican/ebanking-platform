@@ -52,7 +52,7 @@ public final class Report extends Command {
         accountInfo.put("currency",
                 entry.getAccounts().get(commandInput.getAccount()).getCurrency());
         accountInfo.put("transactions",
-                entry.getUser().transactionsToJson(commandInput.getStartTimestamp(),
+                entry.transactionsToJson(commandInput.getStartTimestamp(),
                         commandInput.getEndTimestamp(), commandInput.getAccount()));
 
         report.put("output", accountInfo);
