@@ -1,5 +1,6 @@
 package org.poo.bank.commands.types.debug;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
 import org.poo.fileio.CommandInput;
@@ -23,6 +24,7 @@ public final class PrintUsers extends Command {
      */
     @Override
     public void run() {
+        ObjectNode output = Bank.getInstance().createObjectNode();
         output.put("command", "printUsers");
 
         output.put("output", Bank.getInstance().getDatabase().toJson());

@@ -39,23 +39,19 @@ public final class ChangeInterestRate extends Command {
         }
 
         Account account = entry.getAccount(commandInput.getAccount());
+
         boolean ret = account.setInterest(commandInput.getInterestRate());
+        ObjectNode output = account.changeInterestRateJson(
+                        commandInput.getTimestamp(), commandInput.getInterestRate());
         if (!ret) {
             ObjectNode commandOutput = Bank.getInstance().createObjectNode();
-            commandOutput.put("command", "changeInterestRate");
-
-            output.put("description", "This is not a savings account");
-            output.put("timestamp", commandInput.getTimestamp());
+            commandOutput.put("command", commandInput.getCommand());
 
             commandOutput.put("output", output);
             commandOutput.put("timestamp", commandInput.getTimestamp());
             Bank.getInstance().addToOutput(commandOutput);
         } else {
-            output.put("description",
-                    "Interest rate of the account changed to " + commandInput.getInterestRate());
-            output.put("timestamp", commandInput.getTimestamp());
-
-            entry.addTransaction(new TransactionData(output, commandInput.getAccount()));
+            entry.addTransaction(new TransactionData(output, account.getIban()));
         }
     }
 }

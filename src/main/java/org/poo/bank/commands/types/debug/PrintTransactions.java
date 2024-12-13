@@ -1,5 +1,6 @@
 package org.poo.bank.commands.types.debug;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
 import org.poo.bank.database.DatabaseEntry;
@@ -31,7 +32,7 @@ public final class PrintTransactions extends Command {
         if (entry == null) {
             return;
         }
-
+        ObjectNode output = Bank.getInstance().createObjectNode();
         output.put("command", "printTransactions");
         output.put("output", entry.transactionsToJson());
         output.put("timestamp", commandInput.getTimestamp());

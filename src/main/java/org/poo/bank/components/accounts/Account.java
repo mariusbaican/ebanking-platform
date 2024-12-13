@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import org.poo.bank.Bank;
-import org.poo.bank.components.Card;
+import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
+import org.poo.bank.components.cards.Card;
 import org.poo.bank.currency.Currencies;
 import org.poo.fileio.CommandInput;
 import org.poo.utils.Utils;
@@ -121,6 +122,74 @@ public abstract class Account {
             }
         }
         output.put("cards", cardArray);
+        return output;
+    }
+
+    /**
+     * This method provides a TransactionData object for a newly created account.
+     * @param timestamp The timestamp of the request.
+     * @return A TransactionData object containing the information.
+     */
+    public final TransactionData newAccountTransaction(final int timestamp) {
+        ObjectNode transaction = Bank.getInstance().createObjectNode();
+        transaction.put("timestamp", timestamp);
+        transaction.put("description", "New account created");
+
+        return new TransactionData(transaction, iban);
+    }
+
+    /**
+     * This method provides a TransactionData object for an insufficientFunds error.
+     * @param timestamp The timestamp of the request.
+     * @return A TransactionData object containing the information.
+     */
+    public final TransactionData insufficientFundsTransaction(final int timestamp) {
+        ObjectNode transaction = Bank.getInstance().createObjectNode();
+        transaction.put("timestamp", timestamp);
+        transaction.put("description", "Insufficient funds");
+
+        return new TransactionData(transaction, iban);
+    }
+
+    /**
+     * This method provides a JSON format message for an addInterest request.
+     * @param timestamp The timestamp of the request.
+     * @return An ObjectNode containing the information.
+     */
+    public abstract ObjectNode addInterestJson(int timestamp);
+
+    /**
+     * This method provides a JSON format message for a changeInterest request.
+     * @param timestamp The timestamp of the request.
+     * @return An ObjectNode containing the information.
+     */
+    public abstract ObjectNode changeInterestRateJson(int timestamp, double newInterestRate);
+
+    /**
+     * This method provides a JSON format error message in case of funds remaining when
+     * deletion is requested.
+     * @param timestamp The timestamp of the request.
+     * @return A TransactionData object containing the error message.
+     */
+    public final TransactionData remainingFundsTransaction(final int timestamp) {
+        ObjectNode transaction = Bank.getInstance().createObjectNode();
+        transaction.put("description",
+                "Account couldn't be deleted - there are funds remaining");
+        transaction.put("timestamp", timestamp);
+
+        return new TransactionData(transaction, iban);
+    }
+
+    /**
+     * This method provides a JSON format message for a deleteAccount request.
+     * @param timestamp The timestamp of the request.
+     * @return An ObjectNode containing the output message.
+     */
+    public final ObjectNode deletionJson(final int timestamp) {
+        ObjectNode output = Bank.getInstance().createObjectNode();
+        output.put("success", "Account deleted");
+        output.put("timestamp", timestamp);
+
         return output;
     }
 }

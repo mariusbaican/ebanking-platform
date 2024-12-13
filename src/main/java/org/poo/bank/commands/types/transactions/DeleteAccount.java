@@ -3,7 +3,6 @@ package org.poo.bank.commands.types.transactions;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
-import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.database.DatabaseEntry;
 import org.poo.fileio.CommandInput;
@@ -33,19 +32,15 @@ public final class DeleteAccount extends Command {
     public void run() {
         DatabaseEntry entry = Bank.getInstance().getDatabase()
                 .getEntryByUser(commandInput.getEmail());
-        Account account;
+        Account account = null;
         boolean foundError = (entry == null);
         if (!foundError) {
             account = entry.getAccount(commandInput.getAccount());
             if (account == null) {
                 foundError = true;
             } else if (Double.compare(account.getBalance(), 0.0) != 0) {
-                output.put("description",
-                        "Account couldn't be deleted - there are funds remaining");
-                output.put("timestamp", commandInput.getTimestamp());
-
                 entry.addTransaction(
-                        new TransactionData(output, commandInput.getAccount()));
+                        account.remainingFundsTransaction(commandInput.getTimestamp()));
                 foundError = true;
             }
         }
@@ -62,7 +57,6 @@ public final class DeleteAccount extends Command {
             commandOutput.put("output", error);
             commandOutput.put("timestamp", commandInput.getTimestamp());
             Bank.getInstance().addToOutput(commandOutput.deepCopy());
-
             return;
         }
 
@@ -71,10 +65,7 @@ public final class DeleteAccount extends Command {
         ObjectNode commandOutput = Bank.getInstance().createObjectNode();
         commandOutput.put("command", "deleteAccount");
 
-        output.put("success", "Account deleted");
-        output.put("timestamp", commandInput.getTimestamp());
-
-        commandOutput.put("output", output);
+        commandOutput.put("output", account.deletionJson(commandInput.getTimestamp()));
         commandOutput.put("timestamp", commandInput.getTimestamp());
         Bank.getInstance().addToOutput(commandOutput.deepCopy());
     }

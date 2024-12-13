@@ -1,7 +1,5 @@
 package org.poo.bank.commands;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.poo.bank.Bank;
 import org.poo.fileio.CommandInput;
 
 /**
@@ -10,7 +8,6 @@ import org.poo.fileio.CommandInput;
  */
 public abstract class Command {
     protected final CommandInput commandInput;
-    protected final ObjectNode output; //TODO REDO OUTPUT ARCHITECTURE
 
     /**
      * This constructor stores the commandInput data and initializes the output node.
@@ -18,7 +15,6 @@ public abstract class Command {
      */
     public Command(final CommandInput commandInput) {
         this.commandInput = commandInput;
-        output = Bank.getInstance().createObjectNode();
     }
 
     /**

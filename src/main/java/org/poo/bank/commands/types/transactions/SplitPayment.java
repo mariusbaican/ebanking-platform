@@ -1,6 +1,7 @@
 package org.poo.bank.commands.types.transactions;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
 import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
@@ -47,6 +48,7 @@ public final class SplitPayment extends Command {
 
         double price = commandInput.getAmount() / accounts.size();
 
+        ObjectNode output = Bank.getInstance().createObjectNode();
         output.put("timestamp", commandInput.getTimestamp());
         DecimalFormat df = new DecimalFormat("0.00");
         output.put("description", "Split payment of "

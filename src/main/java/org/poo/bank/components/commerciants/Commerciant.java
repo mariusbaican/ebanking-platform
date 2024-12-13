@@ -26,7 +26,7 @@ public final class Commerciant {
 
     /**
      * This method provides a Commerciant's information in JSON format.
-     * @return An ObjectNode containing a Commerciant's information.
+     * @return An ObjectNode containing a Caommerciant's information.
      */
     public ObjectNode toJson() {
         ObjectNode commerciant = Bank.getInstance().createObjectNode();

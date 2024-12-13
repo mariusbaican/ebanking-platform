@@ -30,6 +30,7 @@ public final class SpendingsReport extends Command {
     public void run() {
         DatabaseEntry entry = Bank.getInstance().getDatabase()
                 .getEntryByAccount(commandInput.getAccount());
+        ObjectNode output = Bank.getInstance().createObjectNode();
         if (entry == null) {
             ObjectNode commandOutput = Bank.getInstance().createObjectNode();
             commandOutput.put("command", "spendingsReport");

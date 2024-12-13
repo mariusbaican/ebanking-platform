@@ -6,7 +6,7 @@ import lombok.Data;
 import org.poo.bank.Bank;
 import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
 import org.poo.bank.commands.types.transactions.transactionHistory.TransactionGroup;
-import org.poo.bank.components.Card;
+import org.poo.bank.components.cards.Card;
 import org.poo.bank.components.User;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.components.commerciants.Commerciant;
@@ -159,21 +159,44 @@ public final class DatabaseEntry {
      * This method creates a transactionReport for this User instance.
      * @param startTimestamp The startTimestamp for the report.
      * @param endTimestamp The endTimestamp for the report.
-     * @param account The IBAN of the account for the report.
+     * @param iban The IBAN of the account for the report.
      * @return An ArrayNode containing all the transaction information.
      */
     public ArrayNode transactionsToJson(final int startTimestamp, final int endTimestamp,
-                                        final String account) {
+                                        final String iban) {
         TransactionGroup transactions = new TransactionGroup();
         for (TransactionData transactionData : transactionHistory) {
             int timestamp = transactionData.data().get("timestamp").asInt();
             if (timestamp >= startTimestamp && timestamp <= endTimestamp) {
-                if (transactionData.account().equals(account)) {
+                if (transactionData.account().equals(iban)) {
                     transactions.addTransaction(transactionData);
                 }
             }
         }
         return transactions.toJson();
+    }
+
+    /**
+     * This method creates a JSON format account report containing the account information
+     * and the transaction history between two provided timestamps.
+     * @param startTimestamp The startingTimestamp of the report.
+     * @param endTimestamp The endTimestamp of the report.
+     * @param iban The IBAN of the target account.
+     * @return
+     */
+    public ObjectNode accountReportJson(final int startTimestamp, final int endTimestamp,
+                                        final String iban) {
+        Account account = getAccount(iban);
+        if (account == null) {
+            return null;
+        }
+        ObjectNode accountInfo = Bank.getInstance().createObjectNode();
+        accountInfo.put("IBAN", account.getIban());
+        accountInfo.put("balance", account.getBalance());
+        accountInfo.put("currency", account.getCurrency());
+        accountInfo.put("transactions", transactionsToJson(startTimestamp, endTimestamp, iban));
+
+        return accountInfo;
     }
 
     /**

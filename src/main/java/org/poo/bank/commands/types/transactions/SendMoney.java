@@ -1,5 +1,6 @@
 package org.poo.bank.commands.types.transactions;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
 import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
@@ -53,12 +54,8 @@ public final class SendMoney extends Command {
                 receiverEntry.getAccount(commandInput.getReceiver());
 
         if (Double.compare(senderAccount.getBalance(), commandInput.getAmount()) < 0) {
-            output.put("timestamp", commandInput.getTimestamp());
-            output.put("description", "Insufficient funds");
-
             senderEntry.addTransaction(
-                    new TransactionData(output.deepCopy(), senderAccount.getIban()));
-
+                    senderAccount.insufficientFundsTransaction(commandInput.getTimestamp()));
             return;
         }
 
@@ -67,6 +64,7 @@ public final class SendMoney extends Command {
         double received =
                 receiverAccount.receive(commandInput.getAmount(), senderAccount.getCurrency());
 
+        ObjectNode output = Bank.getInstance().createObjectNode();
         output.put("timestamp", commandInput.getTimestamp());
         output.put("description", commandInput.getDescription());
         output.put("senderIBAN", commandInput.getAccount());

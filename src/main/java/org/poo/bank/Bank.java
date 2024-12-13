@@ -23,7 +23,7 @@ public final class Bank {
     @Getter
     private final CurrencyExchanger currencyExchanger;
     private ObjectMapper mapper;
-    private ArrayNode output;
+    private ArrayNode globalOutput;
 
     private Bank() {
         database = new Database();
@@ -43,13 +43,13 @@ public final class Bank {
      * stores ExchangeRates and runs through the list of Commands.
      * @param input The input for the operations.
      * @param objectMapper The objectMapper used to create output nodes.
-     * @param globalOutput The output for messages to be added to.
+     * @param output The output for messages to be added to.
      */
     public void runOperations(final ObjectInput input,
                         final ObjectMapper objectMapper,
-                        final ArrayNode globalOutput) {
+                        final ArrayNode output) {
         this.mapper = objectMapper;
-        this.output = globalOutput;
+        this.globalOutput = output;
         Utils.resetRandom();
         database.reset();
         database.addUsers(input.getUsers());
@@ -67,7 +67,7 @@ public final class Bank {
      * @param commandOutput The ObjectNode to be added.
      */
     public void addToOutput(final ObjectNode commandOutput) {
-        output.add(commandOutput);
+        globalOutput.add(commandOutput);
     }
 
     /**
@@ -84,6 +84,47 @@ public final class Bank {
      */
     public ArrayNode createArrayNode() {
         return mapper.createArrayNode();
+    }
+
+    // This might be unused, but it's here just for the sake of having error
+    // outputs for everything
+    /**
+     * This method provides a JSON format output for a non-existent user.
+     * @param timestamp The timestamp of the request.
+     * @return An ObjectNode containing the error message.
+     */
+    public ObjectNode userNotFoundJson(final int timestamp) {
+        ObjectNode output = createObjectNode();
+        output.put("timestamp", timestamp);
+        output.put("description", "User not found");
+
+        return output;
+    }
+
+    /**
+     * This method provides a JSON format output for a non-existent account.
+     * @param timestamp The timestamp of the request.
+     * @return An ObjectNode containing the error message.
+     */
+    public ObjectNode accountNotFoundJson(final int timestamp) {
+        ObjectNode output = createObjectNode();
+        output.put("timestamp", timestamp);
+        output.put("description", "Account not found");
+
+        return output;
+    }
+
+    /**
+     * This method provides a JSON format output for a non-existent card.
+     * @param timestamp The timestamp of the request.
+     * @return An ObjectNode containing the error message.
+     */
+    public ObjectNode cardNotFoundJson(final int timestamp) {
+        ObjectNode output = createObjectNode();
+        output.put("timestamp", timestamp);
+        output.put("description", "Card not found");
+
+        return output;
     }
 
 }

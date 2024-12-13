@@ -40,12 +40,9 @@ public final class AddInterest extends Command {
         boolean ret = account.addInterest();
         if (!ret) {
             ObjectNode commandOutput = Bank.getInstance().createObjectNode();
-            commandOutput.put("command", "addInterest");
-
-            output.put("description", "This is not a savings account");
-            output.put("timestamp", commandInput.getTimestamp());
-
-            commandOutput.put("output", output);
+            commandOutput.put("command", commandInput.getCommand());
+            commandOutput.put("output",
+                    account.addInterestJson(commandInput.getTimestamp()));
             commandOutput.put("timestamp", commandInput.getTimestamp());
             Bank.getInstance().addToOutput(commandOutput);
         }

@@ -33,10 +33,8 @@ public final class Report extends Command {
             ObjectNode commandOutput = Bank.getInstance().createObjectNode();
             commandOutput.put("command", "report");
 
-            output.put("description", "Account not found");
-            output.put("timestamp", commandInput.getTimestamp());
-
-            commandOutput.put("output", output);
+            commandOutput.put("output",
+                    Bank.getInstance().accountNotFoundJson(commandInput.getTimestamp()));
             commandOutput.put("timestamp", commandInput.getTimestamp());
             Bank.getInstance().addToOutput(commandOutput);
             return;
@@ -44,18 +42,9 @@ public final class Report extends Command {
 
         ObjectNode report = Bank.getInstance().createObjectNode();
         report.put("command", "report");
-
-        ObjectNode accountInfo = Bank.getInstance().createObjectNode();
-        accountInfo.put("IBAN", commandInput.getAccount());
-        accountInfo.put("balance",
-                entry.getAccounts().get(commandInput.getAccount()).getBalance());
-        accountInfo.put("currency",
-                entry.getAccounts().get(commandInput.getAccount()).getCurrency());
-        accountInfo.put("transactions",
-                entry.transactionsToJson(commandInput.getStartTimestamp(),
+        report.put("output",
+                entry.accountReportJson(commandInput.getStartTimestamp(),
                         commandInput.getEndTimestamp(), commandInput.getAccount()));
-
-        report.put("output", accountInfo);
         report.put("timestamp", commandInput.getTimestamp());
         Bank.getInstance().addToOutput(report);
     }

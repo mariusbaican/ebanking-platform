@@ -2,8 +2,8 @@ package org.poo.bank.commands.types.transactions;
 
 import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
-import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
-import org.poo.bank.components.Card;
+import org.poo.bank.components.CardFactory;
+import org.poo.bank.components.cards.Card;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.database.DatabaseEntry;
 import org.poo.fileio.CommandInput;
@@ -52,15 +52,9 @@ public final class CreateCard extends Command {
             return;
         }
 
-        Card card = new Card(commandInput, isOneTime);
+        Card card = CardFactory.build(commandInput, isOneTime);
         entry.addCard(card);
 
-        output.put("timestamp", commandInput.getTimestamp());
-        output.put("description", "New card created");
-        output.put("card", card.getCardNumber());
-        output.put("cardHolder", commandInput.getEmail());
-        output.put("account", commandInput.getAccount());
-
-        entry.addTransaction(new TransactionData(output, commandInput.getAccount()));
+        entry.addTransaction(card.creationTransaction(entry, commandInput.getTimestamp()));
     }
 }

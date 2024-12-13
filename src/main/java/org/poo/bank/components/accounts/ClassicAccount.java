@@ -1,7 +1,9 @@
 package org.poo.bank.components.accounts;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.poo.bank.Bank;
 import org.poo.fileio.CommandInput;
 
 /**
@@ -40,5 +42,31 @@ public final class ClassicAccount extends Account {
      */
     public boolean isSavingsAccount() {
         return false;
+    }
+
+    /**
+     * This method provides a JSON format message for an addInterest request.
+     * @param timestamp The timestamp of the request.
+     * @return An ObjectNode containing the error message.
+     */
+    public ObjectNode addInterestJson(final int timestamp) {
+        ObjectNode output = Bank.getInstance().createObjectNode();
+        output.put("timestamp", timestamp);
+        output.put("description", "This is not a savings account");
+
+        return output;
+    }
+
+    /**
+     * This method provides a JSON format message for a changeInterest request.
+     * @param timestamp The timestamp of the request.
+     * @return An ObjectNode containing the error message.
+     */
+    public ObjectNode changeInterestRateJson(final int timestamp, final double newInterestRate) {
+        ObjectNode output = Bank.getInstance().createObjectNode();
+        output.put("timestamp", timestamp);
+        output.put("description", "This is not a savings account");
+
+        return output;
     }
 }

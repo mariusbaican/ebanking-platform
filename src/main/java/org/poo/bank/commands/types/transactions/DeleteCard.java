@@ -2,9 +2,7 @@ package org.poo.bank.commands.types.transactions;
 
 import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
-import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
-import org.poo.bank.components.Card;
-import org.poo.bank.components.accounts.Account;
+import org.poo.bank.components.cards.Card;
 import org.poo.bank.database.DatabaseEntry;
 import org.poo.fileio.CommandInput;
 
@@ -36,16 +34,8 @@ public final class DeleteCard extends Command {
         }
 
         Card card = entry.getCard(commandInput.getCardNumber());
-        Account account = entry.getAccount(card.getIban());
 
         entry.removeCard(card.getCardNumber());
-
-        output.put("timestamp", commandInput.getTimestamp());
-        output.put("description", "The card has been destroyed");
-        output.put("card", commandInput.getCardNumber());
-        output.put("cardHolder", entry.getUser().getEmail());
-        output.put("account", account.getIban());
-
-        entry.addTransaction(new TransactionData(output, account.getIban()));
+        entry.addTransaction(card.destructionTransaction(entry, commandInput.getTimestamp()));
     }
 }

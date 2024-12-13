@@ -21,7 +21,7 @@ import org.poo.fileio.CommandInput;
 
 /**
  * This static class is used to generate every command request.
- * It implements the factory design pattern.
+ * It implements the Factory design pattern.
  */
 public final class CommandFactory {
     private CommandFactory() { }
