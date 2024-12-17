@@ -34,8 +34,8 @@ public final class AddAccount extends Command {
             return;
         }
 
-        Account account = AccountFactory.build(commandInput);
-        entry.addAccount(account);
+        Account account = AccountFactory.generate(commandInput);
+        Bank.getInstance().getDatabase().addAccount(account.getOwner(), account);
 
         entry.addTransaction(account.newAccountTransaction(commandInput.getTimestamp()));
     }

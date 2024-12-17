@@ -47,13 +47,16 @@ public final class CreateCard extends Command {
         if (entry == null) {
             return;
         }
+        // I found that I accidentally resolved the edge case of a user trying to create a card
+        // for another user. I firstly pull up the requesting user's entry and then look for the
+        // target account in his entry, thus if he doesn't own it, the request doesn't go through.
         Account account = entry.getAccount(commandInput.getAccount());
         if (account == null) {
             return;
         }
 
-        Card card = CardFactory.build(commandInput, isOneTime);
-        entry.addCard(card);
+        Card card = CardFactory.generate(commandInput, isOneTime);
+        Bank.getInstance().getDatabase().addCard(commandInput.getEmail(), card);
 
         entry.addTransaction(card.creationTransaction(entry, commandInput.getTimestamp()));
     }

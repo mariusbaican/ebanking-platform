@@ -29,6 +29,17 @@ public final class DatabaseEntry {
     private final List<TransactionData> transactionHistory;
 
     /**
+     * This constructor creates a new entry based on a User.
+     * @param user The User for this specific entry.
+     */
+    DatabaseEntry(final User user) {
+        this.user = user;
+        accounts = new LinkedHashMap<>();
+        cards = new LinkedHashMap<>();
+        transactionHistory = new ArrayList<>();
+    }
+
+    /**
      * This method adds a TransactionData object to the transactionHistory.
      * @param transactionData The TransactionData to be added.
      */
@@ -37,21 +48,10 @@ public final class DatabaseEntry {
     }
 
     /**
-     * This constructor creates a new entry based on a User.
-     * @param user The User for this specific entry.
-     */
-    public DatabaseEntry(final User user) {
-        this.user = user;
-        accounts = new LinkedHashMap<>();
-        cards = new LinkedHashMap<>();
-        transactionHistory = new ArrayList<>();
-    }
-
-    /**
      * This method adds an Account to this entry.
      * @param account The Account to be added.
      */
-    public void addAccount(final Account account) {
+    void addAccount(final Account account) {
         accounts.putIfAbsent(account.getIban(), account);
     }
 
@@ -59,7 +59,7 @@ public final class DatabaseEntry {
      * This method removes an Account from this entry.
      * @param iban The IBAN of the Account to be removed.
      */
-    public void removeAccount(final String iban) {
+    void removeAccount(final String iban) {
         accounts.remove(iban);
         removeAccountCards(iban);
     }
@@ -77,7 +77,7 @@ public final class DatabaseEntry {
      * This method adds a Card to this entry.
      * @param card The Card to be added.
      */
-    public void addCard(final Card card) {
+    void addCard(final Card card) {
         cards.putIfAbsent(card.getCardNumber(), card);
     }
 
@@ -85,7 +85,7 @@ public final class DatabaseEntry {
      * This method removes a Card from this entry.
      * @param cardNumber The cardNumber of the Card to be removed.
      */
-    public void removeCard(final String cardNumber) {
+    void removeCard(final String cardNumber) {
         cards.remove(cardNumber);
     }
 
@@ -119,7 +119,7 @@ public final class DatabaseEntry {
      * This method removes all the Cards associated to an Account.
      * @param iban The IBAN of the Account to have its Cards removed.
      */
-    public void removeAccountCards(final String iban) {
+    private void removeAccountCards(final String iban) {
         for (Card card : cards.values()) {
             if (card.getIban().equals(iban)) {
                 cards.remove(card.getIban());

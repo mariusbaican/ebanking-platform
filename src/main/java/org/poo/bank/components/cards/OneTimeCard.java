@@ -43,8 +43,8 @@ public final class OneTimeCard extends Card {
             entry.addTransaction(destructionTransaction(entry, timestamp));
             Bank.getInstance().getDatabase().removeCard(cardNumber);
 
-            Card card = CardFactory.build(iban, true);
-            entry.addCard(card);
+            Card card = CardFactory.generate(iban, true);
+            Bank.getInstance().getDatabase().addCard(entry.getUser().getEmail(), card);
             entry.addTransaction(card.creationTransaction(entry, timestamp));
         }
     }

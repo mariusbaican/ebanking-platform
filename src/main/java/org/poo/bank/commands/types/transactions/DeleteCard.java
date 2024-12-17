@@ -35,7 +35,7 @@ public final class DeleteCard extends Command {
 
         Card card = entry.getCard(commandInput.getCardNumber());
 
-        entry.removeCard(card.getCardNumber());
+        Bank.getInstance().getDatabase().removeCard(card.getCardNumber());
         entry.addTransaction(card.destructionTransaction(entry, commandInput.getTimestamp()));
     }
 }

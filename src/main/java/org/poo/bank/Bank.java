@@ -86,8 +86,9 @@ public final class Bank {
         return mapper.createArrayNode();
     }
 
-    // This might be unused, but it's here just for the sake of having error
-    // outputs for everything
+    // This might be unused, but it's here just for the sake of having notFound
+    // outputs for everything. Blame the required error messages not me. Plenty
+    // of errors don't require a message, many of them referring to invalid users
     /**
      * This method provides a JSON format output for a non-existent user.
      * @param timestamp The timestamp of the request.

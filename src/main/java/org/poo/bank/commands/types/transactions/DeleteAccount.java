@@ -60,10 +60,10 @@ public final class DeleteAccount extends Command {
             return;
         }
 
-        entry.removeAccount(commandInput.getAccount());
+        Bank.getInstance().getDatabase().removeAccount(commandInput.getAccount());
 
         ObjectNode commandOutput = Bank.getInstance().createObjectNode();
-        commandOutput.put("command", "deleteAccount");
+        commandOutput.put("command", commandInput.getCommand());
 
         commandOutput.put("output", account.deletionJson(commandInput.getTimestamp()));
         commandOutput.put("timestamp", commandInput.getTimestamp());

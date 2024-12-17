@@ -15,7 +15,7 @@ public final class CardFactory {
      * @param isOneTime Whether the desired card is a OneTimeCard or not
      * @return An instance of the requested cardType.
      */
-    public static Card build(final CommandInput commandInput, final boolean isOneTime) {
+    public static Card generate(final CommandInput commandInput, final boolean isOneTime) {
         if (isOneTime) {
             return new OneTimeCard(commandInput);
         }
@@ -28,7 +28,7 @@ public final class CardFactory {
      * @param isOneTime Whether the desired card is a OneTimeCard or not
      * @return An instance of the requested cardType.
      */
-    public static Card build(final String iban, final boolean isOneTime) {
+    public static Card generate(final String iban, final boolean isOneTime) {
         if (isOneTime) {
             return new OneTimeCard(iban);
         } else {

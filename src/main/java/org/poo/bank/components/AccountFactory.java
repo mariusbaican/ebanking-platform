@@ -15,7 +15,7 @@ public final class AccountFactory {
      * @param commandInput The general input of a command.
      * @return An instance of the requested accountType.
      */
-    public static Account build(final CommandInput commandInput) {
+    public static Account generate(final CommandInput commandInput) {
         switch (commandInput.getAccountType()) {
             case "savings" -> {
                 return new SavingsAccount(commandInput);

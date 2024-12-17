@@ -18,14 +18,18 @@ import java.util.Map;
  */
 @Data
 public final class Database {
-    private final Map<String, DatabaseEntry> db;
+    private final Map<String, DatabaseEntry> userDB;
+    private final Map<String, DatabaseEntry> accountDB;
+    private final Map<String, DatabaseEntry> cardDB;
     private final Map<String, String> aliases;
 
     /**
      * This constructor initializes the data structures.
      */
     public Database() {
-        db = new LinkedHashMap<>();
+        userDB = new LinkedHashMap<>();
+        accountDB = new LinkedHashMap<>();
+        cardDB = new LinkedHashMap<>();
         aliases = new LinkedHashMap<>();
     }
 
@@ -33,7 +37,9 @@ public final class Database {
      * This method clears the Database contents.
      */
     public void reset() {
-        db.clear();
+        userDB.clear();
+        accountDB.clear();
+        cardDB.clear();
         aliases.clear();
     }
 
@@ -43,7 +49,7 @@ public final class Database {
      */
     public void addUsers(final UserInput[] userInput) {
         for (UserInput user : userInput) {
-            db.put(user.getEmail(), new DatabaseEntry(new User(user)));
+            userDB.put(user.getEmail(), new DatabaseEntry(new User(user)));
         }
     }
 
@@ -64,40 +70,39 @@ public final class Database {
      * @param account The account to be added.
      */
     public void addAccount(final String email, final Account account) {
-        DatabaseEntry entry = db.getOrDefault(email, null);
+        DatabaseEntry entry = userDB.getOrDefault(email, null);
         if (entry == null) {
             return;
         }
         entry.addAccount(account);
+        accountDB.put(account.getIban(), entry);
     }
 
-    // This may be unused, but it's here for the sake of having
-    // add, remove and get methods for everything
     /**
      * This method is used to remove an Account from the Database.
      * @param iban The IBAN of the Account to be removed.
      */
     public void removeAccount(final String iban) {
-        for (DatabaseEntry entry : db.values()) {
-            if (entry.getAccounts().getOrDefault(iban, null) != null) {
-                entry.removeAccountCards(iban);
-            }
+        DatabaseEntry entry = getEntryByAccount(iban);
+        if (entry == null) {
+            return;
         }
+        entry.removeAccount(iban);
+        accountDB.remove(iban);
     }
 
-    // This may be unused, but it's here for the sake of having
-    // add, remove and get methods for everything
     /**
      * This method is used to add a Card to the Database.
      * @param email The email of the Card owner.
      * @param card The Card to be added.
      */
     public void addCard(final String email, final Card card) {
-        DatabaseEntry entry = db.getOrDefault(email, null);
+        DatabaseEntry entry = userDB.getOrDefault(email, null);
         if (entry == null) {
             return;
         }
         entry.addCard(card);
+        cardDB.put(card.getCardNumber(), entry);
     }
 
     /**
@@ -105,22 +110,22 @@ public final class Database {
      * @param cardNumber The cardNumber of the Card to be removed.
      */
     public void removeCard(final String cardNumber) {
-        for (DatabaseEntry entry : db.values()) {
-            if (entry.getCards().getOrDefault(cardNumber, null) != null) {
-                entry.removeCard(cardNumber);
-            }
+        DatabaseEntry entry = getEntryByCard(cardNumber);
+        if (entry == null) {
+            return;
         }
+        entry.removeCard(cardNumber);
+        cardDB.remove(cardNumber);
     }
 
-    // The following methods showcase what I meant by SQL-type data access
-
+    // The following methods showcase what I meant by SQL-type data access*
     /**
      * This method pulls an entry from the Database based on its specific User.
      * @param email The email of the desired User.
      * @return The DatabaseEntry of the provided User.
      */
     public DatabaseEntry getEntryByUser(final String email) {
-        return db.getOrDefault(email, null);
+        return userDB.getOrDefault(email, null);
     }
 
     /**
@@ -130,16 +135,11 @@ public final class Database {
      */
     public DatabaseEntry getEntryByAccount(final String input) {
         //This allows for the use of aliases instead of Account IBAN
-        String actualIban = input;
-        if (aliases.containsKey(input)) {
-            actualIban = aliases.get(input);
+        String actualIban = aliases.getOrDefault(input, null);
+        if (actualIban == null) {
+            actualIban = input;
         }
-        for (DatabaseEntry entry : db.values()) {
-            if (entry.getAccounts().getOrDefault(actualIban, null) != null) {
-                return entry;
-            }
-        }
-        return null;
+        return accountDB.get(actualIban);
     }
 
     /**
@@ -148,25 +148,21 @@ public final class Database {
      * @return The DatabaseEntry of the provided Card.
      */
     public DatabaseEntry getEntryByCard(final String cardNumber) {
-        for (DatabaseEntry entry : db.values()) {
-            if (entry.getCards().getOrDefault(cardNumber, null) != null) {
-                return entry;
-            }
-        }
-        return null;
+        return cardDB.get(cardNumber);
     }
 
+    // This may be unused, but it's here for the sake of having
+    // add, remove and get methods for everything
     /**
      * This method pulls a User from the Database.
      * @param email The email of the requested User.
      * @return The requested User.
      */
     public User getUser(final String email) {
-        DatabaseEntry entry = db.getOrDefault(email, null);
-        if (entry == null) {
+        if (!userDB.containsKey(email)) {
             return null;
         }
-        return entry.getUser();
+        return userDB.get(email).getUser();
     }
 
     /**
@@ -176,16 +172,14 @@ public final class Database {
      */
     public Account getAccount(final String input) {
         //This allows for the use of aliases instead of Account IBAN
-        String actualIban = input;
-        if (aliases.containsKey(input)) {
-            actualIban = aliases.get(input);
+        String actualIban = aliases.getOrDefault(input, null);
+        if (actualIban == null) {
+            actualIban = input;
         }
-        for (DatabaseEntry entry : db.values()) {
-            if (entry.getAccounts().getOrDefault(actualIban, null) != null) {
-                return entry.getAccounts().get(actualIban);
-            }
+        if (!accountDB.containsKey(actualIban)) {
+            return null;
         }
-        return null;
+        return accountDB.get(actualIban).getAccount(actualIban);
     }
 
     // This may be unused, but it's here for the sake of having
@@ -196,12 +190,10 @@ public final class Database {
      * @return The requested Card.
      */
     public Card getCard(final String cardNumber) {
-        for (DatabaseEntry entry : db.values()) {
-            if (entry.getCards().getOrDefault(cardNumber, null) != null) {
-                return entry.getCards().get(cardNumber);
-            }
+        if (!cardDB.containsKey(cardNumber)) {
+            return null;
         }
-        return null;
+        return cardDB.get(cardNumber).getCard(cardNumber);
     }
 
     /**
@@ -210,7 +202,7 @@ public final class Database {
      */
     public ArrayNode toJson() {
         ArrayNode entries = Bank.getInstance().createArrayNode();
-        for (DatabaseEntry entry : db.values()) {
+        for (DatabaseEntry entry : userDB.values()) {
             entries.add(entry.toJson());
         }
         return entries;
