@@ -5,7 +5,7 @@ Marius Baican 323CA
 ## Introduction
 For the first part of the project, I wanted to learn more about implementing design patterns and how 
 to better organise my code. Improving upon the first homework, I have tried to move further away from  
-the C-type programming, where is used to use flags to differentiate slightly different objects, instead  
+the C-type programming, where I used to use flags to differentiate slightly different objects, instead  
 of each having its own class, better embracing the OOP concepts.
 
 ## Bank
