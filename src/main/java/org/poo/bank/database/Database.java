@@ -3,12 +3,16 @@ package org.poo.bank.database;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.Data;
 import org.poo.bank.Bank;
+import org.poo.bank.commands.output.visitor.OutputVisitor;
+import org.poo.bank.commands.output.visitor.Visitable;
 import org.poo.bank.components.cards.Card;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.components.User;
 import org.poo.fileio.UserInput;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -17,7 +21,7 @@ import java.util.Map;
  * It uses an access approach similar to SQL (for immersion I guess?)
  */
 @Data
-public final class Database {
+public final class Database implements Visitable {
     private final Map<String, DatabaseEntry> userDB;
     private final Map<String, DatabaseEntry> accountDB;
     private final Map<String, DatabaseEntry> cardDB;
@@ -196,15 +200,12 @@ public final class Database {
         return cardDB.get(cardNumber).getCard(cardNumber);
     }
 
-    /**
-     * This method converts the Database to JSON format.
-     * @return An ArrayNode containing the Database information.
-     */
-    public ArrayNode toJson() {
-        ArrayNode entries = Bank.getInstance().createArrayNode();
-        for (DatabaseEntry entry : userDB.values()) {
-            entries.add(entry.toJson());
-        }
-        return entries;
+    public Collection<DatabaseEntry> getEntries() {
+        return userDB.values();
+    }
+
+    @Override
+    public <T> T accept(OutputVisitor<T> outputVisitor) {
+        return outputVisitor.convertDatabase(this);
     }
 }

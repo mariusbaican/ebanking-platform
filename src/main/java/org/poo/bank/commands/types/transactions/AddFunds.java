@@ -33,6 +33,6 @@ public final class AddFunds extends Command {
         }
 
         Account account = entry.getAccount(commandInput.getAccount());
-        account.receive(commandInput.getAmount(), account.getCurrency());
+        account.addFunds(commandInput.getAmount());
     }
 }

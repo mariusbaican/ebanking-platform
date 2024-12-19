@@ -1,4 +1,4 @@
-package org.poo.bank.currency;
+package org.poo.bank;
 
 import lombok.EqualsAndHashCode;
 
@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
  * @param <B> The second currency (usually String).
  */
 @EqualsAndHashCode
-public final class Currencies<A, B> {
+public final class Tuple<A, B> {
 
     private final A a;
     private final B b;
@@ -18,7 +18,7 @@ public final class Currencies<A, B> {
      * @param a The first currency (usually String).
      * @param b The second currency (usually String).
      */
-    public Currencies(final A a, final B b) {
+    public Tuple(final A a, final B b) {
         this.a = a;
         this.b = b;
     }

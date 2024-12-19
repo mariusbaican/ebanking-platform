@@ -2,12 +2,17 @@ package org.poo.bank.commands;
 
 import org.poo.bank.commands.types.debug.PrintTransactions;
 import org.poo.bank.commands.types.debug.PrintUsers;
+import org.poo.bank.commands.types.reports.BusinessReport;
 import org.poo.bank.commands.types.reports.Report;
 import org.poo.bank.commands.types.reports.SpendingsReport;
 import org.poo.bank.commands.types.transactions.AddAccount;
 import org.poo.bank.commands.types.transactions.AddFunds;
 import org.poo.bank.commands.types.transactions.AddInterest;
+import org.poo.bank.commands.types.transactions.AddNewBusinessAssociate;
+import org.poo.bank.commands.types.transactions.CashWithdrawal;
+import org.poo.bank.commands.types.transactions.ChangeDepositLimit;
 import org.poo.bank.commands.types.transactions.ChangeInterestRate;
+import org.poo.bank.commands.types.transactions.ChangeSpendingLimit;
 import org.poo.bank.commands.types.transactions.CheckCardStatus;
 import org.poo.bank.commands.types.transactions.CreateCard;
 import org.poo.bank.commands.types.transactions.DeleteAccount;
@@ -17,13 +22,51 @@ import org.poo.bank.commands.types.transactions.SendMoney;
 import org.poo.bank.commands.types.transactions.SetAlias;
 import org.poo.bank.commands.types.transactions.SetMinimumBalance;
 import org.poo.bank.commands.types.transactions.SplitPayment;
+import org.poo.bank.commands.types.transactions.WithdrawSavings;
 import org.poo.fileio.CommandInput;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 /**
  * This static class is used to generate every command request.
  * It implements the Factory design pattern.
  */
 public final class CommandFactory {
+    private static final Map<String, Function<CommandInput, Command>> COMMANDS = new HashMap<>();
+
+    static {
+        register("printUsers", PrintUsers::new);
+        register("printTransactions", PrintTransactions::new);
+        register("report", Report::new);
+        register("spendingsReport", SpendingsReport::new);
+        register("businessReport", BusinessReport::new);
+        register("addAccount", AddAccount::new);
+        register("addFunds", AddFunds::new);
+        register("addInterest", AddInterest::new);
+        register("addNewBusinessAssociate", AddNewBusinessAssociate::new);
+        register("cashWithdrawal", CashWithdrawal::new);
+        register("changeDepositLimit", ChangeDepositLimit::new);
+        register("changeInterestRate", ChangeInterestRate::new);
+        register("changeSpendingLimit", ChangeSpendingLimit::new);
+        register("checkCardStatus", CheckCardStatus::new);
+        register("createCard", CreateCard::new);
+        register("createOneTimeCard", (input) -> new CreateCard(input, true));
+        register("deleteAccount", DeleteAccount::new);
+        register("deleteCard", DeleteCard::new);
+        register("payOnline", PayOnline::new);
+        register("sendMoney", SendMoney::new);
+        register("setAlias", SetAlias::new);
+        register("setMinimumBalance", SetMinimumBalance::new);
+        register("splitPayment", SplitPayment::new);
+        register("withdrawSavings", WithdrawSavings::new);
+    }
+
+    private static void register(String commandName, Function<CommandInput, Command> constructor) {
+        COMMANDS.put(commandName, constructor);
+    }
+
     private CommandFactory() { }
 
     /**
@@ -32,64 +75,6 @@ public final class CommandFactory {
      * @return A command subclass that fulfills the desired task.
      */
     public static Command generate(final CommandInput commandInput) {
-        switch (commandInput.getCommand()) {
-            case "printUsers" -> {
-                return new PrintUsers(commandInput);
-            }
-            case "printTransactions" -> {
-                return new PrintTransactions(commandInput);
-            }
-            case "addAccount" -> {
-                return new AddAccount(commandInput);
-            }
-            case "addFunds" -> {
-                return new AddFunds(commandInput);
-            }
-            case "createCard" -> {
-                return new CreateCard(commandInput);
-            }
-            case "createOneTimeCard" -> {
-                return new CreateCard(commandInput, true);
-            }
-            case "deleteAccount" -> {
-                return new DeleteAccount(commandInput);
-            }
-            case "deleteCard" -> {
-                return new DeleteCard(commandInput);
-            }
-            case "setMinimumBalance" -> {
-                return new SetMinimumBalance(commandInput);
-            }
-            case "checkCardStatus" -> {
-                return new CheckCardStatus(commandInput);
-            }
-            case "payOnline" -> {
-                return new PayOnline(commandInput);
-            }
-            case "sendMoney" -> {
-                return new SendMoney(commandInput);
-            }
-            case "setAlias" -> {
-                return new SetAlias(commandInput);
-            }
-            case "splitPayment" -> {
-                return new SplitPayment(commandInput);
-            }
-            case "addInterest" -> {
-                return new AddInterest(commandInput);
-            }
-            case "changeInterestRate" -> {
-                return new ChangeInterestRate(commandInput);
-            }
-            case "report" -> {
-                return new Report(commandInput);
-            }
-            case "spendingsReport" -> {
-                return new SpendingsReport(commandInput);
-            }
-            default ->
-                throw new IllegalArgumentException("Unknown transaction: "
-                                                    + commandInput.getCommand());
-        }
+        return COMMANDS.get(commandInput.getCommand()).apply(commandInput);
     }
 }

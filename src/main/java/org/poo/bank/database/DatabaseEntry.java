@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import org.poo.bank.Bank;
+import org.poo.bank.commands.output.visitor.OutputVisitor;
+import org.poo.bank.commands.output.visitor.Visitable;
 import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
 import org.poo.bank.commands.types.transactions.transactionHistory.TransactionGroup;
 import org.poo.bank.components.cards.Card;
@@ -22,7 +24,7 @@ import java.util.Map;
  * This class stores the information of an entry within the Database.
  */
 @Data
-public final class DatabaseEntry {
+public final class DatabaseEntry implements Visitable {
     private final User user;
     private final Map<String, Account> accounts;
     private final Map<String, Card> cards;
@@ -98,21 +100,9 @@ public final class DatabaseEntry {
         return cards.getOrDefault(cardNumber, null);
     }
 
-    /**
-     * This method converts an Entry's information to JSON format.
-     * @return An ObjectNode containing the Entry's information.
-     */
-    public ObjectNode toJson() {
-        ObjectNode output = Bank.getInstance().createObjectNode();
-        output.put("firstName", user.getFirstName());
-        output.put("lastName", user.getLastName());
-        output.put("email", user.getEmail());
-        ArrayNode accountsArray = Bank.getInstance().createArrayNode();
-        for (Account account : accounts.values()) {
-            accountsArray.add(account.toJson());
-        }
-        output.put("accounts", accountsArray);
-        return output;
+    @Override
+    public <T> T accept(OutputVisitor<T> outputVisitor) {
+        return outputVisitor.convertEntry(this);
     }
 
     /**
