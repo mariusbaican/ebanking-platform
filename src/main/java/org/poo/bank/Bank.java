@@ -12,6 +12,9 @@ import org.poo.fileio.ExchangeInput;
 import org.poo.fileio.ObjectInput;
 import org.poo.utils.Utils;
 
+import java.util.Calendar;
+import java.util.Date;
+
 /**
  * This class stores the Bank's information and handles the operations.
  * It uses the Singleton design pattern.
@@ -24,10 +27,13 @@ public final class Bank {
     private final CurrencyExchanger currencyExchanger;
     private ObjectMapper mapper;
     private ArrayNode globalOutput;
+    @Getter
+    private final Calendar calendar = Calendar.getInstance();
 
     private Bank() {
         database = new Database();
         currencyExchanger = new CurrencyExchanger();
+
     }
 
     /**

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import org.poo.bank.Bank;
-import org.poo.bank.commands.output.visitor.OutputVisitor;
-import org.poo.bank.commands.output.visitor.Visitable;
+import org.poo.bank.output.visitor.OutputVisitor;
+import org.poo.bank.output.visitor.Visitable;
 import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
 import org.poo.bank.commands.types.transactions.transactionHistory.TransactionGroup;
 import org.poo.bank.components.cards.Card;
@@ -199,5 +199,14 @@ public final class DatabaseEntry implements Visitable {
             transactions.addTransaction(transactionData);
         }
         return transactions.toJson();
+    }
+
+    public Account getValidClassicAccount(String currency) {
+        for (Account account : accounts.values()) {
+            if (account.getAccountType() == Account.AccountType.CLASSIC && account.getCurrency().equals(currency)) {
+                return account;
+            }
+        }
+        return null;
     }
 }

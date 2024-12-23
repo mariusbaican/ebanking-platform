@@ -1,10 +1,8 @@
 package org.poo.bank.database;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.Data;
-import org.poo.bank.Bank;
-import org.poo.bank.commands.output.visitor.OutputVisitor;
-import org.poo.bank.commands.output.visitor.Visitable;
+import org.poo.bank.output.visitor.OutputVisitor;
+import org.poo.bank.output.visitor.Visitable;
 import org.poo.bank.components.cards.Card;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.components.User;
@@ -12,7 +10,6 @@ import org.poo.fileio.UserInput;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 

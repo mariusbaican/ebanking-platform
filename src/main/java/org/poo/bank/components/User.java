@@ -1,9 +1,12 @@
 package org.poo.bank.components;
 
 import lombok.Data;
-import org.poo.bank.commands.output.visitor.OutputVisitor;
-import org.poo.bank.commands.output.visitor.Visitable;
+import org.poo.bank.Bank;
+import org.poo.bank.output.visitor.OutputVisitor;
+import org.poo.bank.output.visitor.Visitable;
 import org.poo.fileio.UserInput;
+
+import java.util.Calendar;
 
 /**
  * This class is used to store and handle a User's information.
@@ -14,6 +17,7 @@ public final class User implements Visitable {
     private String lastName;
     private String email;
     private String birthDate;
+    private int age;
     private String occupation;
 
     /**
@@ -24,11 +28,25 @@ public final class User implements Visitable {
         this.firstName = userInput.getFirstName();
         this.lastName = userInput.getLastName();
         this.email = userInput.getEmail();
-        //TODO ADD AFTER UPDATING CHECKER
-        /*
         this.birthDate = userInput.getBirthDate();
+        this.age = computeAge(birthDate);
         this.occupation = userInput.getOccupation();
-         */
+    }
+
+    private int computeAge(String birthDate) {
+        String[] parts = birthDate.split("-");
+        int userYear = Integer.parseInt(parts[0]);
+        int userMonth = Integer.parseInt(parts[1]);
+        int userDay = Integer.parseInt(parts[2]);
+        int currYear = Bank.getInstance().getCalendar().get(Calendar.YEAR);
+        int currMonth = Bank.getInstance().getCalendar().get(Calendar.MONTH);
+        int currDay = Bank.getInstance().getCalendar().get(Calendar.DAY_OF_MONTH);
+        int userAge = currYear - userYear;
+
+        if (currMonth < userMonth || (currMonth == userMonth && currDay < userDay)) {
+            userAge--;
+        }
+        return userAge;
     }
 
     @Override

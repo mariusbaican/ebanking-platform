@@ -1,6 +1,11 @@
 package org.poo.bank.commands.types.transactions;
 
+import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
+import org.poo.bank.components.User;
+import org.poo.bank.components.accounts.Account;
+import org.poo.bank.database.DatabaseEntry;
+import org.poo.bank.output.TransactionMessages;
 import org.poo.fileio.CommandInput;
 
 public class WithdrawSavings extends Command {
@@ -10,6 +15,37 @@ public class WithdrawSavings extends Command {
 
     @Override
     public void run() {
+        DatabaseEntry entry = Bank.getInstance().getDatabase().getEntryByAccount(commandInput.getAccount());
+        if (entry == null) {
+            return;
+        }
 
+        Account savingsAccount = entry.getAccount(commandInput.getAccount());
+        if (savingsAccount.getAccountType() != Account.AccountType.SAVINGS) {
+            //Account is not of type savings
+            return;
+        }
+
+        User user = entry.getUser();
+        if (user.getAge() < 21) {
+            entry.addTransaction(TransactionMessages.minimumAgeError(commandInput.getTimestamp(), commandInput.getAccount()));
+            return;
+        }
+
+        Account classicAccount = entry.getValidClassicAccount(commandInput.getCurrency());
+        if (classicAccount == null) {
+            //You do not have a classic account
+            return;
+        }
+
+        double withdrawn = savingsAccount.withdrawFunds(commandInput.getAmount(), commandInput.getCurrency());
+        if (Double.compare(withdrawn, 0.0) == 0) {
+            //Insufficient funds
+            return;
+        }
+        classicAccount.addFunds(withdrawn);
+        entry.addTransaction(TransactionMessages.withdrawSavings(commandInput.getAmount(),
+                classicAccount.getIban(), savingsAccount.getIban(), commandInput.getDescription(),
+                commandInput.getTimestamp()));
     }
 }

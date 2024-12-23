@@ -1,4 +1,4 @@
-package org.poo.bank.commands.output.visitor;
+package org.poo.bank.output.visitor;
 
 import org.poo.bank.components.User;
 import org.poo.bank.components.accounts.Account;

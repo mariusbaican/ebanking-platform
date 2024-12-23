@@ -1,4 +1,4 @@
-package org.poo.bank.commands.output.visitor;
+package org.poo.bank.output.visitor;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -39,8 +39,6 @@ public class JsonVisitor implements OutputVisitor<ObjectNode> {
         userJson.put("firstName", user.getFirstName());
         userJson.put("lastName", user.getLastName());
         userJson.put("email", user.getEmail());
-        userJson.put("birthDate", user.getBirthDate());
-        userJson.put("occupation", user.getOccupation());
         return userJson;
     }
 
@@ -50,8 +48,7 @@ public class JsonVisitor implements OutputVisitor<ObjectNode> {
         accountJson.put("IBAN", account.getIban());
         accountJson.put("balance", account.getBalance());
         accountJson.put("currency", account.getCurrency());
-        accountJson.put("type", account.getAccountType());
-        accountJson.put("servicePlan", account.getServicePlan().toString());
+        accountJson.put("type", account.getAccountType().toString());
         ArrayNode cardsJson = Bank.getInstance().createArrayNode();
 
         DatabaseEntry entry

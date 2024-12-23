@@ -90,7 +90,7 @@ public final class CurrencyExchanger {
      * @param tuple The currency tuple to transfer from and to.
      * @return The exchangeRate.
      */
-    public double getRate(final Tuple<String, String> tuple) {
+    private double getRate(final Tuple<String, String> tuple) {
         if (tuple.getFirst().equals(tuple.getSecond())) {
             return 1.0;
         }
@@ -101,6 +101,10 @@ public final class CurrencyExchanger {
                                                 + tuple.getSecond());
         }
         return rate;
+    }
 
+    public double exchange(final Tuple<String, String> tuple, double sum) {
+        double rate = getRate(tuple);
+        return sum * rate;
     }
 }

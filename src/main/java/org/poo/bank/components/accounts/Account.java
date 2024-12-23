@@ -3,8 +3,9 @@ package org.poo.bank.components.accounts;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import org.poo.bank.Bank;
-import org.poo.bank.commands.output.visitor.OutputVisitor;
-import org.poo.bank.commands.output.visitor.Visitable;
+import org.poo.bank.currency.CurrencyExchanger;
+import org.poo.bank.output.visitor.OutputVisitor;
+import org.poo.bank.output.visitor.Visitable;
 import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
 import org.poo.bank.components.ServicePlanHandler.ServicePlan;
 import org.poo.bank.components.User;
@@ -97,9 +98,7 @@ public abstract class Account implements Visitable {
      * @return The amount that was paid in the account's currency. 0.0 if insufficient funds.
      */
     public final double pay(final double amount, final String requestedCurrency) {
-        double adjustedAmount = amount
-                * Bank.getInstance().getCurrencyExchanger()
-                .getRate(new Tuple<>(requestedCurrency, this.currency));
+        double adjustedAmount = Bank.getInstance().getCurrencyExchanger().exchange(new Tuple<>(requestedCurrency, currency), amount);
         if (!canAfford(adjustedAmount)) {
             return 0.0;
         }
@@ -111,6 +110,15 @@ public abstract class Account implements Visitable {
         balance += amount;
     }
 
+    public final double withdrawFunds(final double amount, final String currency) {
+        double adjustedAmount = Bank.getInstance().getCurrencyExchanger().exchange(new Tuple<>(currency, this.currency), amount);
+        if (!canAfford(adjustedAmount)) {
+            return 0.0;
+        }
+        balance -= adjustedAmount;
+        return adjustedAmount;
+    }
+
     /**
      * This method handles the receiving of funds for this account instance.
      * @param amount The amount to be received.
@@ -118,9 +126,7 @@ public abstract class Account implements Visitable {
      * @return The amount that was received in the account's currency.
      */
     public final double receive(final double amount, final String requestedCurrency) {
-        double adjustedAmount = amount
-                * Bank.getInstance().getCurrencyExchanger()
-                .getRate(new Tuple<>(requestedCurrency, this.currency));
+        double adjustedAmount = Bank.getInstance().getCurrencyExchanger().exchange(new Tuple<>(requestedCurrency, currency), amount);
         balance += adjustedAmount;
         return adjustedAmount;
     }
@@ -132,9 +138,7 @@ public abstract class Account implements Visitable {
      * @return The amount to be paid in the account's currency. 0.0 if insufficient funds.
      */
     public final double canAfford(final double amount, final String requestedCurrency) {
-        double adjustedAmount = amount
-                * Bank.getInstance().getCurrencyExchanger()
-                .getRate(new Tuple<>(requestedCurrency, this.currency));
+        double adjustedAmount = Bank.getInstance().getCurrencyExchanger().exchange(new Tuple<>(requestedCurrency, currency), amount);
         if (Double.compare(balance, adjustedAmount) >= 0) {
             return adjustedAmount;
         }
