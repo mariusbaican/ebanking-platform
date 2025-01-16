@@ -19,6 +19,7 @@ import java.util.Map;
  */
 @Data
 public final class Database implements Visitable {
+    private static final Database INSTANCE = new Database();
     private final Map<String, DatabaseEntry> userDB;
     private final Map<String, DatabaseEntry> accountDB;
     private final Map<String, DatabaseEntry> cardDB;
@@ -27,7 +28,7 @@ public final class Database implements Visitable {
     /**
      * This constructor initializes the data structures.
      */
-    public Database() {
+    private Database() {
         userDB = new LinkedHashMap<>();
         accountDB = new LinkedHashMap<>();
         cardDB = new LinkedHashMap<>();
@@ -42,6 +43,10 @@ public final class Database implements Visitable {
         accountDB.clear();
         cardDB.clear();
         aliases.clear();
+    }
+
+    public static Database getInstance() {
+        return INSTANCE;
     }
 
     /**

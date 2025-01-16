@@ -8,9 +8,13 @@ import org.poo.bank.components.accounts.Account;
 import org.poo.bank.components.cards.Card;
 import org.poo.bank.database.Database;
 import org.poo.bank.database.DatabaseEntry;
+import org.poo.bank.output.logs.TransactionData;
+import org.poo.bank.output.logs.TransactionHistory;
+import org.poo.bank.output.logs.reports.AccountReport;
+import org.poo.bank.output.logs.reports.BusinessReport;
+import org.poo.bank.output.logs.reports.SpendingReport;
 
 public class JsonVisitor implements OutputVisitor<ObjectNode> {
-
     @Override
     public ObjectNode convertDatabase(Database database) {
         ObjectNode databaseJson = Bank.getInstance().createObjectNode();
@@ -18,7 +22,7 @@ public class JsonVisitor implements OutputVisitor<ObjectNode> {
         for (DatabaseEntry entry : Bank.getInstance().getDatabase().getEntries()) {
             entriesArray.add(convertEntry(entry));
         }
-        databaseJson.put("output", entriesArray);
+        databaseJson.putPOJO("output", entriesArray);
         return databaseJson;
     }
 
@@ -29,7 +33,7 @@ public class JsonVisitor implements OutputVisitor<ObjectNode> {
         for (Account account : entry.getAccounts().values()) {
             accountsJson.add(convertAccount(account));
         }
-        entryJson.put("accounts", accountsJson);
+        entryJson.putPOJO("accounts", accountsJson);
         return entryJson;
     }
 
@@ -70,5 +74,38 @@ public class JsonVisitor implements OutputVisitor<ObjectNode> {
         cardJson.put("cardNumber", card.getCardNumber());
         cardJson.put("status", card.getStatus().toString());
         return cardJson;
+    }
+
+    @Override
+    public ObjectNode convertTransactionHistory(TransactionHistory transactionHistory) {
+        ObjectNode transactionHistoryJson = Bank.getInstance().createObjectNode();
+        ArrayNode transactionsJson = Bank.getInstance().createArrayNode();
+        for (TransactionData data : transactionHistory.getTransactions()) {
+            transactionsJson.add(data.toJson());
+        }
+        transactionHistoryJson.putPOJO("transactions", transactionsJson);
+        return transactionHistoryJson;
+    }
+
+    @Override
+    public ObjectNode convertAccountReport(AccountReport accountReport) {
+        ObjectNode accountReportJson = Bank.getInstance().createObjectNode();
+        accountReportJson.put("IBAN", accountReport.getAccount().getIban());
+        accountReportJson.put("balance", accountReport.getAccount().getBalance());
+        accountReportJson.put("currency", accountReport.getAccount().getCurrency());
+        accountReportJson.putPOJO("transactions",
+                accountReport.getTransactionHistory().accept(this));
+        return accountReportJson;
+    }
+
+    @Override
+    public ObjectNode convertSpendingReport(SpendingReport spendingReport) {
+        ObjectNode spendingReportJson = Bank.getInstance().createObjectNode();
+        return spendingReportJson;
+    }
+
+    @Override
+    public ObjectNode convertBusinessReport(BusinessReport businessReport) {
+        return null;
     }
 }

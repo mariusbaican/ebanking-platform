@@ -17,11 +17,6 @@ public class BusinessAccount extends Account {
     }
 
     @Override
-    public boolean isSavingsAccount() {
-        return false;
-    }
-
-    @Override
     public ObjectNode addInterestJson(int timestamp) {
         return null;
     }

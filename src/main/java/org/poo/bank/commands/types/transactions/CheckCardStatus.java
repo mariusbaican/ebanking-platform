@@ -6,6 +6,7 @@ import org.poo.bank.commands.Command;
 import org.poo.bank.components.cards.Card;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.database.DatabaseEntry;
+import org.poo.bank.output.logs.Response;
 import org.poo.fileio.CommandInput;
 
 /**
@@ -33,21 +34,29 @@ public final class CheckCardStatus extends Command {
         DatabaseEntry entry = Bank.getInstance().getDatabase()
                 .getEntryByCard(commandInput.getCardNumber());
         if (entry == null) {
-            ObjectNode commandOutput = Bank.getInstance().createObjectNode();
-            commandOutput.put("command", commandInput.getCommand());
-            commandOutput.put("output",
-                    Bank.getInstance().cardNotFoundJson(commandInput.getTimestamp()));
-            commandOutput.put("timestamp", commandInput.getTimestamp());
-            Bank.getInstance().addToOutput(commandOutput);
+            Bank.getInstance().addToOutput(new Response()
+                    .addField("command", commandInput.getCommand())
+                    .addField("timestamp", Bank.getInstance().getTimestamp())
+                    .addField("output", new Response()
+                            .addField("timestamp", Bank.getInstance().getTimestamp())
+                            .addField("description", "Card not found")
+                            .asObjectNode()
+                    )
+                    .asObjectNode()
+            );
             return;
         }
 
         Card card = entry.getCard(commandInput.getCardNumber());
         Account account = entry.getAccount(card.getIban());
-
         if (card.getStatus() == Card.CardStatus.ACTIVE) {
             if (account.getBalance() <= account.getMinBalance()) {
-                entry.addTransaction(card.freezeCardTransaction(commandInput.getTimestamp()));
+                entry.addTransaction(new Response()
+                        .addField("timestamp", Bank.getInstance().getTimestamp())
+                        .addField("description",
+                                "You have reached the minimum amount of funds, the card will be frozen")
+                        .asTransactionData(account.getIban())
+                );
             }
         }
     }

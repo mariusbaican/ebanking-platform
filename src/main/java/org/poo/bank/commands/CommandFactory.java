@@ -2,9 +2,9 @@ package org.poo.bank.commands;
 
 import org.poo.bank.commands.types.debug.PrintTransactions;
 import org.poo.bank.commands.types.debug.PrintUsers;
-import org.poo.bank.commands.types.reports.BusinessReport;
-import org.poo.bank.commands.types.reports.Report;
-import org.poo.bank.commands.types.reports.SpendingsReport;
+import org.poo.bank.commands.types.reports.CreateBusinessReport;
+import org.poo.bank.commands.types.reports.CreateAccountReport;
+import org.poo.bank.commands.types.reports.CreateSpendingReport;
 import org.poo.bank.commands.types.transactions.AddAccount;
 import org.poo.bank.commands.types.transactions.AddFunds;
 import org.poo.bank.commands.types.transactions.AddInterest;
@@ -15,6 +15,7 @@ import org.poo.bank.commands.types.transactions.ChangeInterestRate;
 import org.poo.bank.commands.types.transactions.ChangeSpendingLimit;
 import org.poo.bank.commands.types.transactions.CheckCardStatus;
 import org.poo.bank.commands.types.transactions.CreateCard;
+import org.poo.bank.commands.types.transactions.CreateOneTimeCard;
 import org.poo.bank.commands.types.transactions.DeleteAccount;
 import org.poo.bank.commands.types.transactions.DeleteCard;
 import org.poo.bank.commands.types.transactions.PayOnline;
@@ -39,9 +40,9 @@ public final class CommandFactory {
     static {
         register("printUsers", PrintUsers::new);
         register("printTransactions", PrintTransactions::new);
-        register("report", Report::new);
-        register("spendingsReport", SpendingsReport::new);
-        register("businessReport", BusinessReport::new);
+        register("report", CreateAccountReport::new);
+        register("spendingsReport", CreateSpendingReport::new);
+        register("businessReport", CreateBusinessReport::new);
         register("addAccount", AddAccount::new);
         register("addFunds", AddFunds::new);
         register("addInterest", AddInterest::new);
@@ -52,7 +53,7 @@ public final class CommandFactory {
         register("changeSpendingLimit", ChangeSpendingLimit::new);
         register("checkCardStatus", CheckCardStatus::new);
         register("createCard", CreateCard::new);
-        register("createOneTimeCard", (input) -> new CreateCard(input, true));
+        register("createOneTimeCard", CreateOneTimeCard::new);
         register("deleteAccount", DeleteAccount::new);
         register("deleteCard", DeleteCard::new);
         register("payOnline", PayOnline::new);

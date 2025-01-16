@@ -3,6 +3,7 @@ package org.poo.bank.components.cards;
 import org.poo.bank.Bank;
 import org.poo.bank.components.CardFactory;
 import org.poo.bank.database.DatabaseEntry;
+import org.poo.bank.output.logs.Response;
 import org.poo.fileio.CommandInput;
 
 public final class OneTimeCard extends Card {
@@ -43,10 +44,37 @@ public final class OneTimeCard extends Card {
             entry.addTransaction(destructionTransaction(entry, timestamp));
             Bank.getInstance().getDatabase().removeCard(cardNumber);
 
-            Card card = CardFactory.generate(iban, true);
+            Card card = CardFactory.generate(iban, CardType.ONE_TIME);
             Bank.getInstance().getDatabase().addCard(entry.getUser().getEmail(), card);
             entry.addTransaction(card.creationTransaction(entry, timestamp));
         }
+    }
+
+    @Override
+    public void replace() {
+        DatabaseEntry entry = Bank.getInstance().getDatabase().getEntryByCard(cardNumber);
+
+        Bank.getInstance().getDatabase().removeCard(cardNumber);
+        entry.addTransaction(new Response()
+                .addField("timestamp", Bank.getInstance().getTimestamp())
+                .addField("description", "The card has been destroyed")
+                .addField("card", cardNumber)
+                .addField("cardHolder", entry.getUser().getEmail())
+                .addField("account", iban)
+                .asTransactionData(iban)
+        );
+
+        Card card = CardFactory.generate(iban, CardType.ONE_TIME);
+        Bank.getInstance().getDatabase().addCard(entry.getUser().getEmail(), card);
+        entry.addTransaction(new Response()
+                .addField("timestamp", Bank.getInstance().getTimestamp())
+                .addField("description", "New card created")
+                .addField("card", card.getCardNumber())
+                .addField("cardHolder", entry.getUser().getEmail())
+                .addField("account", iban)
+                .asTransactionData(iban)
+        );
+
     }
 
 }

@@ -3,9 +3,11 @@ package org.poo.bank.commands.types.transactions;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
-import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
+import org.poo.bank.output.logs.Response;
+import org.poo.bank.output.logs.TransactionData;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.database.DatabaseEntry;
+import org.poo.bank.payments.Transfer;
 import org.poo.fileio.CommandInput;
 
 /**
@@ -54,33 +56,35 @@ public final class SendMoney extends Command {
                 receiverEntry.getAccount(commandInput.getReceiver());
 
         if (Double.compare(senderAccount.getBalance(), commandInput.getAmount()) < 0) {
-            senderEntry.addTransaction(
-                    senderAccount.insufficientFundsTransaction(commandInput.getTimestamp()));
+            senderEntry.addTransaction(new Response()
+                    .addField("timestamp", Bank.getInstance().getTimestamp())
+                    .addField("description", "Insufficient funds")
+                    .asTransactionData(senderAccount.getIban())
+            );
             return;
         }
 
-        double paid =
-                senderAccount.pay(commandInput.getAmount(), senderAccount.getCurrency());
-        double received =
-                receiverAccount.receive(commandInput.getAmount(), senderAccount.getCurrency());
+        Transfer transfer = new Transfer(senderAccount, receiverAccount, commandInput.getAmount());
+        Bank.getInstance().getPaymentHandler().addPayment(transfer);
 
-        ObjectNode output = Bank.getInstance().createObjectNode();
-        output.put("timestamp", commandInput.getTimestamp());
-        output.put("description", commandInput.getDescription());
-        output.put("senderIBAN", commandInput.getAccount());
-        output.put("receiverIBAN", commandInput.getReceiver());
+        senderEntry.addTransaction(new Response()
+                .addField("timestamp", Bank.getInstance().getTimestamp())
+                .addField("description", commandInput.getDescription())
+                .addField("senderIBAN", commandInput.getAccount())
+                .addField("receiverIBAN", commandInput.getReceiver())
+                .addField("amount", transfer.getSentAmount() + " " + senderAccount.getCurrency())
+                .addField("transferType", "sent")
+                .asTransactionData(senderAccount.getIban())
+        );
 
-        output.put("amount", paid + " " + senderAccount.getCurrency());
-        output.put("transferType", "sent");
-        TransactionData senderData =
-                new TransactionData(output.deepCopy(), senderAccount.getIban());
-
-        output.put("amount", received + " " + receiverAccount.getCurrency());
-        output.put("transferType", "received");
-        TransactionData receiverData =
-                new TransactionData(output.deepCopy(), receiverAccount.getIban());
-
-        senderEntry.addTransaction(senderData);
-        receiverEntry.addTransaction(receiverData);
+        receiverEntry.addTransaction(new Response()
+                .addField("timestamp", Bank.getInstance().getTimestamp())
+                .addField("description", commandInput.getDescription())
+                .addField("senderIBAN", commandInput.getAccount())
+                .addField("receiverIBAN", commandInput.getReceiver())
+                .addField("amount", transfer.getReceivedAmount() + " " + receiverAccount.getCurrency())
+                .addField("transferType", "received")
+                .asTransactionData(receiverAccount.getIban())
+        );
     }
 }

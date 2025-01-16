@@ -5,6 +5,7 @@ import org.poo.bank.commands.Command;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.components.AccountFactory;
 import org.poo.bank.database.DatabaseEntry;
+import org.poo.bank.output.logs.Response;
 import org.poo.fileio.CommandInput;
 
 /**
@@ -37,6 +38,10 @@ public final class AddAccount extends Command {
         Account account = AccountFactory.generate(commandInput);
         Bank.getInstance().getDatabase().addAccount(account.getOwner(), account);
 
-        entry.addTransaction(account.newAccountTransaction(commandInput.getTimestamp()));
+        entry.addTransaction(new Response()
+                .addField("timestamp", Bank.getInstance().getTimestamp())
+                .addField("description", "New account created")
+                .asTransactionData(account.getIban())
+        );
     }
 }

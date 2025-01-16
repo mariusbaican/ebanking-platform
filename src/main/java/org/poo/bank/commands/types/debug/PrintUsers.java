@@ -3,6 +3,7 @@ package org.poo.bank.commands.types.debug;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
+import org.poo.bank.output.logs.Response;
 import org.poo.bank.output.visitor.JsonVisitor;
 import org.poo.fileio.CommandInput;
 
@@ -25,9 +26,11 @@ public final class PrintUsers extends Command {
      */
     @Override
     public void run() {
-        ObjectNode output = Bank.getInstance().getDatabase().accept(new JsonVisitor());
-        output.put("command", "printUsers");
-        output.put("timestamp", commandInput.getTimestamp());
-        Bank.getInstance().addToOutput(output);
+        Bank.getInstance().addToOutput(new Response()
+                .addField("command", commandInput.getCommand())
+                .addField("timestamp", Bank.getInstance().getTimestamp())
+                .addField("output", Bank.getInstance().getDatabase().accept(new JsonVisitor()).get("output"))
+                .asObjectNode()
+        );
     }
 }

@@ -8,9 +8,16 @@ import java.util.Map;
 
 public class ServicePlanHandler {
     private static final Map<Tuple<ServicePlan, ServicePlan>, Double> feeMap = new HashMap<>();
-    private static boolean initialized = false;
     @Getter
     private static final String currency = "RON";
+
+    static {
+        feeMap.put(new Tuple<>(ServicePlan.STANDARD, ServicePlan.SILVER), 100.0);
+        feeMap.put(new Tuple<>(ServicePlan.STANDARD, ServicePlan.GOLD), 350.0);
+        feeMap.put(new Tuple<>(ServicePlan.STUDENT, ServicePlan.SILVER), 100.0);
+        feeMap.put(new Tuple<>(ServicePlan.STUDENT, ServicePlan.GOLD), 350.0);
+        feeMap.put(new Tuple<>(ServicePlan.SILVER, ServicePlan.GOLD), 250.0);
+    }
 
     public enum ServicePlan {
         STANDARD("standard"),
@@ -18,7 +25,7 @@ public class ServicePlanHandler {
         SILVER("silver"),
         GOLD("gold");
 
-        String status;
+        final String status;
 
         ServicePlan(String status) {
             this.status = status;
@@ -28,18 +35,6 @@ public class ServicePlanHandler {
         public String toString() {
             return status;
         }
-    }
-
-    public static void init() {
-        if (initialized) {
-            return;
-        }
-        feeMap.put(new Tuple<>(ServicePlan.STANDARD, ServicePlan.SILVER), 100.0);
-        feeMap.put(new Tuple<>(ServicePlan.STANDARD, ServicePlan.GOLD), 350.0);
-        feeMap.put(new Tuple<>(ServicePlan.STUDENT, ServicePlan.SILVER), 100.0);
-        feeMap.put(new Tuple<>(ServicePlan.STUDENT, ServicePlan.GOLD), 350.0);
-        feeMap.put(new Tuple<>(ServicePlan.SILVER, ServicePlan.GOLD), 250.0);
-        initialized = true;
     }
 
     public static double getUpgradeFee(final ServicePlan currentPlan, final ServicePlan newPlan) {

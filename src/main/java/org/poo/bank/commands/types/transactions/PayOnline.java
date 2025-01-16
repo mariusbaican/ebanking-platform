@@ -1,10 +1,11 @@
 package org.poo.bank.commands.types.transactions;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
 import org.poo.bank.components.cards.Card;
 import org.poo.bank.database.DatabaseEntry;
+import org.poo.bank.output.logs.Response;
+import org.poo.bank.payments.CardPayment;
 import org.poo.fileio.CommandInput;
 
 /**
@@ -36,19 +37,30 @@ public final class PayOnline extends Command {
         DatabaseEntry entry = Bank.getInstance().getDatabase()
                 .getEntryByCard(commandInput.getCardNumber());
         if (entry == null) {
-            ObjectNode commandOutput = Bank.getInstance().createObjectNode();
-            commandOutput.put("command", commandInput.getCommand());
-
-            commandOutput.put("output",
-                    Bank.getInstance().cardNotFoundJson(commandInput.getTimestamp()));
-            commandOutput.put("timestamp", commandInput.getTimestamp());
-            Bank.getInstance().addToOutput(commandOutput);
+            Bank.getInstance().addToOutput(new Response()
+                    .addField("command", commandInput.getCommand())
+                    .addField("timestamp", Bank.getInstance().getTimestamp())
+                    .addField("output", new Response()
+                            .addField("timestamp", Bank.getInstance().getTimestamp())
+                            .addField("description", "Card not found")
+                            .asObjectNode()
+                    )
+                    .asObjectNode()
+            );
             return;
         }
 
         Card card = entry.getCard(commandInput.getCardNumber());
-        card.pay(entry, commandInput.getAmount(), commandInput.getCurrency(),
-                commandInput.getTimestamp(), commandInput.getCommerciant());
+        CardPayment cardPayment = new CardPayment(card, commandInput.getAmount(), commandInput.getCurrency());
+        Bank.getInstance().getPaymentHandler().addPayment(cardPayment);
+
+        entry.addTransaction(new Response()
+                .addField("timestamp", Bank.getInstance().getTimestamp())
+                .addField("description", "Card payment")
+                .addField("commerciant", commandInput.getCommerciant())
+                .addField("amount", cardPayment.getAdjustedAmount())
+                .asTransactionData(card.getIban())
+        );
 
     }
 

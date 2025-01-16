@@ -5,7 +5,7 @@ import org.poo.bank.commands.Command;
 import org.poo.bank.components.User;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.database.DatabaseEntry;
-import org.poo.bank.output.TransactionMessages;
+import org.poo.bank.output.logs.Response;
 import org.poo.fileio.CommandInput;
 
 public class WithdrawSavings extends Command {
@@ -28,11 +28,15 @@ public class WithdrawSavings extends Command {
 
         User user = entry.getUser();
         if (user.getAge() < 21) {
-            entry.addTransaction(TransactionMessages.minimumAgeError(commandInput.getTimestamp(), commandInput.getAccount()));
+            entry.addTransaction(new Response()
+                    .addField("timestamp", Bank.getInstance().getTimestamp())
+                    .addField("description", "You don't have the minimum age required.")
+                    .asTransactionData(savingsAccount.getIban())
+            );
             return;
         }
 
-        Account classicAccount = entry.getValidClassicAccount(commandInput.getCurrency());
+        Account classicAccount = null; //= entry.getValidClassicAccount(commandInput.getCurrency());
         if (classicAccount == null) {
             //You do not have a classic account
             return;
@@ -43,9 +47,12 @@ public class WithdrawSavings extends Command {
             //Insufficient funds
             return;
         }
-        classicAccount.addFunds(withdrawn);
+        classicAccount.addFunds(commandInput.getAmount());
+        /*entry.addTransaction(TransactionMessages.withdrawSavings(commandInput.getAmount(),
+                classicAccount.getIban(), savingsAccount.getIban(), commandInput.getDescription(),
+                commandInput.getTimestamp(), classicAccount.getIban()));
         entry.addTransaction(TransactionMessages.withdrawSavings(commandInput.getAmount(),
                 classicAccount.getIban(), savingsAccount.getIban(), commandInput.getDescription(),
-                commandInput.getTimestamp()));
+                commandInput.getTimestamp(), savingsAccount.getIban()));*/
     }
 }

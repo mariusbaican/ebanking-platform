@@ -3,10 +3,9 @@ package org.poo.bank.components.accounts;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import org.poo.bank.Bank;
-import org.poo.bank.currency.CurrencyExchanger;
 import org.poo.bank.output.visitor.OutputVisitor;
 import org.poo.bank.output.visitor.Visitable;
-import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
+import org.poo.bank.output.logs.TransactionData;
 import org.poo.bank.components.ServicePlanHandler.ServicePlan;
 import org.poo.bank.components.User;
 import org.poo.bank.Tuple;
@@ -86,12 +85,6 @@ public abstract class Account implements Visitable {
     public abstract boolean setInterest(double interestRate);
 
     /**
-     * This method specifies if an account is a SavingsAccount.
-     * @return True if it's a SavingsAccount. False if it's a ClassicAccount.
-     */
-    public abstract boolean isSavingsAccount();
-
-    /**
      * This method handles a payment for this account instance.
      * @param amount The amount to be paid.
      * @param requestedCurrency The original currency to be paid.
@@ -122,11 +115,11 @@ public abstract class Account implements Visitable {
     /**
      * This method handles the receiving of funds for this account instance.
      * @param amount The amount to be received.
-     * @param requestedCurrency The original currency to be received.
+     * @param receivedCurrency The original currency to be received.
      * @return The amount that was received in the account's currency.
      */
-    public final double receive(final double amount, final String requestedCurrency) {
-        double adjustedAmount = Bank.getInstance().getCurrencyExchanger().exchange(new Tuple<>(requestedCurrency, currency), amount);
+    public final double receive(final double amount, final String receivedCurrency) {
+        double adjustedAmount = Bank.getInstance().getCurrencyExchanger().exchange(new Tuple<>(receivedCurrency, currency), amount);
         balance += adjustedAmount;
         return adjustedAmount;
     }

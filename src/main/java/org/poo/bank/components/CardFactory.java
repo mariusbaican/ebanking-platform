@@ -12,27 +12,34 @@ public final class CardFactory {
     /**
      * This method generates a Card based on a given input.
      * @param commandInput The general input of a command.
-     * @param isOneTime Whether the desired card is a OneTimeCard or not
+     * @param cardType The desired cardType
      * @return An instance of the requested cardType.
      */
-    public static Card generate(final CommandInput commandInput, final boolean isOneTime) {
-        if (isOneTime) {
-            return new OneTimeCard(commandInput);
+    public static Card generate(final CommandInput commandInput, Card.CardType cardType) {
+        switch (cardType) {
+            case REGULAR:
+                return new Card(commandInput);
+            case ONE_TIME:
+                return new OneTimeCard(commandInput);
+            default:
+                throw new IllegalArgumentException("Invalid card type: " + cardType);
         }
-        return new Card(commandInput);
     }
 
     /**
      * This method generates a Card based on a given input.
      * @param iban The IBAN of the owner account.
-     * @param isOneTime Whether the desired card is a OneTimeCard or not
+     * @param cardType The desired cardType
      * @return An instance of the requested cardType.
      */
-    public static Card generate(final String iban, final boolean isOneTime) {
-        if (isOneTime) {
-            return new OneTimeCard(iban);
-        } else {
-            return new Card(iban);
+    public static Card generate(final String iban, Card.CardType cardType) {
+        switch (cardType) {
+            case REGULAR:
+                return new Card(iban);
+            case ONE_TIME:
+                return new OneTimeCard(iban);
+            default:
+                throw new IllegalArgumentException("Invalid card type: " + cardType);
         }
     }
 

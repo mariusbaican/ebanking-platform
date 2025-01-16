@@ -5,6 +5,7 @@ import org.poo.bank.commands.Command;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.components.cards.Card;
 import org.poo.bank.database.DatabaseEntry;
+import org.poo.bank.payments.WithdrawCash;
 import org.poo.fileio.CommandInput;
 
 public class CashWithdrawal extends Command {
@@ -28,10 +29,12 @@ public class CashWithdrawal extends Command {
 
         Account account = entry.getAccount(card.getIban());
 
-        double withdrawn = account.withdrawFunds(commandInput.getAmount(), "RON");
-        if (Double.compare(withdrawn, 0.0) == 0) {
-            //Insufficient funds
+        WithdrawCash withdrawCash = new WithdrawCash(account, commandInput.getAmount());
+        if (Double.compare(account.getBalance(), withdrawCash.getAdjustedAmount()) < 0) {
+            // Insufficient funds
+            return;
         }
+        Bank.getInstance().getPaymentHandler().addPayment(withdrawCash);
         //Cash withdrawal of ${amount}
     }
 

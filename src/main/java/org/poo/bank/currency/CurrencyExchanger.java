@@ -10,10 +10,15 @@ import java.util.Map;
  * This is a utility class used to convert currencies.
  */
 public final class CurrencyExchanger {
+    private static final CurrencyExchanger INSTANCE = new CurrencyExchanger();
     public static final HashMap<Tuple<String, String>, Double> EXCHANGE_RATES =
             new HashMap<>();
 
-    public CurrencyExchanger() { }
+    private CurrencyExchanger() { }
+
+    public static CurrencyExchanger getInstance() {
+        return INSTANCE;
+    }
 
     /**
      * This method is used to reset the EXCHANGE_RATES Map.

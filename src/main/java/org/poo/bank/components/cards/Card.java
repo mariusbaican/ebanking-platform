@@ -5,7 +5,7 @@ import lombok.Data;
 import org.poo.bank.Bank;
 import org.poo.bank.output.visitor.OutputVisitor;
 import org.poo.bank.output.visitor.Visitable;
-import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
+import org.poo.bank.output.logs.TransactionData;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.database.DatabaseEntry;
 import org.poo.fileio.CommandInput;
@@ -38,6 +38,11 @@ public class Card implements Visitable {
         public String toString() {
             return status;
         }
+    }
+
+    public enum CardType {
+        REGULAR,
+        ONE_TIME;
     }
 
     /**
@@ -186,4 +191,6 @@ public class Card implements Visitable {
 
         return new TransactionData(transaction, iban);
     }
+
+    public void replace() { }
 }

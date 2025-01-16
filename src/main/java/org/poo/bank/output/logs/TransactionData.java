@@ -1,4 +1,4 @@
-package org.poo.bank.commands.types.transactions.transactionHistory;
+package org.poo.bank.output.logs;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 

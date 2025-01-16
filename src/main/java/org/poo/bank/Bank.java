@@ -7,6 +7,7 @@ import lombok.Getter;
 import org.poo.bank.commands.CommandFactory;
 import org.poo.bank.currency.CurrencyExchanger;
 import org.poo.bank.database.Database;
+import org.poo.bank.payments.PaymentHandler;
 import org.poo.fileio.CommandInput;
 import org.poo.fileio.ExchangeInput;
 import org.poo.fileio.ObjectInput;
@@ -22,19 +23,19 @@ import java.util.Date;
 public final class Bank {
     private static final Bank BANK = new Bank();
     @Getter
-    private final Database database;
+    private final Database database = Database.getInstance();
     @Getter
-    private final CurrencyExchanger currencyExchanger;
+    private final CurrencyExchanger currencyExchanger = CurrencyExchanger.getInstance();
+    @Getter
+    private final PaymentHandler paymentHandler = PaymentHandler.getInstance();
     private ObjectMapper mapper;
     private ArrayNode globalOutput;
     @Getter
     private final Calendar calendar = Calendar.getInstance();
+    @Getter
+    private double timestamp = 0;
 
-    private Bank() {
-        database = new Database();
-        currencyExchanger = new CurrencyExchanger();
-
-    }
+    private Bank() { }
 
     /**
      * This method provides the unique and globally available Bank instance.
@@ -60,10 +61,12 @@ public final class Bank {
         database.reset();
         database.addUsers(input.getUsers());
         currencyExchanger.reset();
+        timestamp = 0;
         for (ExchangeInput exchangeInput : input.getExchangeRates()) {
             currencyExchanger.addExchangeRate(exchangeInput);
         }
         for (CommandInput commandInput : input.getCommands()) {
+            timestamp = commandInput.getTimestamp();
             CommandFactory.generate(commandInput).run();
         }
     }

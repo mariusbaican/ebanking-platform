@@ -29,13 +29,11 @@ public final class Commerciant {
     }
 
     public Commerciant (final CommerciantInput commerciantInput, final double total) {
-        /*
         this.name = commerciantInput.getCommerciant();
         this.total =  total;
-        this.iban = commerciantInput.getIBAN();
+        this.iban = commerciantInput.getAccount();
         this.type = commerciantInput.getType();
         this.cashbackStrategy = commerciantInput.getCashbackStrategy();
-         */
     }
 
     /**
