@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
-import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
+import org.poo.bank.output.logs.TransactionData;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.database.DatabaseEntry;
 import org.poo.fileio.CommandInput;

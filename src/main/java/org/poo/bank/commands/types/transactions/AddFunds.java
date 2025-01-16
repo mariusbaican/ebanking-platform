@@ -4,6 +4,8 @@ import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.database.DatabaseEntry;
+import org.poo.bank.payments.Deposit;
+import org.poo.bank.payments.PaymentHandler;
 import org.poo.fileio.CommandInput;
 
 /**
@@ -33,6 +35,7 @@ public final class AddFunds extends Command {
         }
 
         Account account = entry.getAccount(commandInput.getAccount());
-        account.receive(commandInput.getAmount(), account.getCurrency());
+        Bank.getInstance().getPaymentHandler()
+                .addPayment(new Deposit(account, commandInput.getAmount()));
     }
 }

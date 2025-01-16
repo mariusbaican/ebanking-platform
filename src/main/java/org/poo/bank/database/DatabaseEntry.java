@@ -1,16 +1,12 @@
 package org.poo.bank.database;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
-import org.poo.bank.Bank;
-import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
-import org.poo.bank.commands.types.transactions.transactionHistory.TransactionGroup;
+import org.poo.bank.output.visitor.OutputVisitor;
+import org.poo.bank.output.visitor.Visitable;
+import org.poo.bank.output.logs.TransactionData;
 import org.poo.bank.components.cards.Card;
 import org.poo.bank.components.User;
 import org.poo.bank.components.accounts.Account;
-import org.poo.bank.components.commerciants.Commerciant;
-import org.poo.bank.components.commerciants.CommerciantGroup;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -22,7 +18,7 @@ import java.util.Map;
  * This class stores the information of an entry within the Database.
  */
 @Data
-public final class DatabaseEntry {
+public final class DatabaseEntry implements Visitable {
     private final User user;
     private final Map<String, Account> accounts;
     private final Map<String, Card> cards;
@@ -98,21 +94,9 @@ public final class DatabaseEntry {
         return cards.getOrDefault(cardNumber, null);
     }
 
-    /**
-     * This method converts an Entry's information to JSON format.
-     * @return An ObjectNode containing the Entry's information.
-     */
-    public ObjectNode toJson() {
-        ObjectNode output = Bank.getInstance().createObjectNode();
-        output.put("firstName", user.getFirstName());
-        output.put("lastName", user.getLastName());
-        output.put("email", user.getEmail());
-        ArrayNode accountsArray = Bank.getInstance().createArrayNode();
-        for (Account account : accounts.values()) {
-            accountsArray.add(account.toJson());
-        }
-        output.put("accounts", accountsArray);
-        return output;
+    @Override
+    public <T> T accept(OutputVisitor<T> outputVisitor) {
+        return outputVisitor.convertEntry(this);
     }
 
     /**
@@ -134,7 +118,7 @@ public final class DatabaseEntry {
      * @param account The IBAN of the account for the report.
      * @param output The ObjectNode for the report to be added into.
      */
-    public void spendingsReportJson(final int startTimestamp, final int endTimestamp,
+    /*public void spendingsReportJson(final int startTimestamp, final int endTimestamp,
                                     final String account, final ObjectNode output) {
         TransactionGroup transactions = new TransactionGroup();
         CommerciantGroup commerciants = new CommerciantGroup();
@@ -153,7 +137,7 @@ public final class DatabaseEntry {
         }
         output.put("transactions", transactions.toJson());
         output.put("commerciants", commerciants.toJson());
-    }
+    }*/
 
     /**
      * This method creates a transactionReport for this User instance.
@@ -162,7 +146,7 @@ public final class DatabaseEntry {
      * @param iban The IBAN of the account for the report.
      * @return An ArrayNode containing all the transaction information.
      */
-    public ArrayNode transactionsToJson(final int startTimestamp, final int endTimestamp,
+    /*ArrayNode transactionsToJson(final int startTimestamp, final int endTimestamp,
                                         final String iban) {
         TransactionGroup transactions = new TransactionGroup();
         for (TransactionData transactionData : transactionHistory) {
@@ -174,7 +158,7 @@ public final class DatabaseEntry {
             }
         }
         return transactions.toJson();
-    }
+    }*/
 
     /**
      * This method creates a JSON format account report containing the account information
@@ -184,7 +168,7 @@ public final class DatabaseEntry {
      * @param iban The IBAN of the target account.
      * @return
      */
-    public ObjectNode accountReportJson(final int startTimestamp, final int endTimestamp,
+    /*public ObjectNode accountReportJson(final int startTimestamp, final int endTimestamp,
                                         final String iban) {
         Account account = getAccount(iban);
         if (account == null) {
@@ -197,17 +181,26 @@ public final class DatabaseEntry {
         accountInfo.put("transactions", transactionsToJson(startTimestamp, endTimestamp, iban));
 
         return accountInfo;
-    }
+    }*/
 
     /**
      * This method creates a transactionReport for this User instance.
      * @return An ArrayNode containing all the transaction information.
      */
-    public ArrayNode transactionsToJson() {
+    /*public ArrayNode transactionsToJson() {
         TransactionGroup transactions = new TransactionGroup();
         for (TransactionData transactionData : transactionHistory) {
             transactions.addTransaction(transactionData);
         }
         return transactions.toJson();
     }
+
+    public Account getValidClassicAccount(String currency) {
+        for (Account account : accounts.values()) {
+            if (account.getAccountType() == Account.AccountType.CLASSIC && account.getCurrency().equals(currency)) {
+                return account;
+            }
+        }
+        return null;
+    }*/
 }

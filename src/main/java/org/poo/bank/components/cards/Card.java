@@ -2,9 +2,10 @@ package org.poo.bank.components.cards;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
-import lombok.Getter;
 import org.poo.bank.Bank;
-import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
+import org.poo.bank.output.visitor.OutputVisitor;
+import org.poo.bank.output.visitor.Visitable;
+import org.poo.bank.output.logs.TransactionData;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.database.DatabaseEntry;
 import org.poo.fileio.CommandInput;
@@ -14,7 +15,7 @@ import org.poo.utils.Utils;
  * This class stores and handles a Card's information.
  */
 @Data
-public class Card {
+public class Card implements Visitable {
     protected String iban;
     protected String cardNumber;
     protected CardStatus status;
@@ -23,7 +24,6 @@ public class Card {
      * This enum is used to determine the card status.
      * It also stores the string equivalent for ease of use.
      */
-    @Getter
     public enum CardStatus {
         ACTIVE("active"),
         FROZEN("frozen");
@@ -33,6 +33,16 @@ public class Card {
         CardStatus(final String status) {
             this.status = status;
         }
+
+        @Override
+        public String toString() {
+            return status;
+        }
+    }
+
+    public enum CardType {
+        REGULAR,
+        ONE_TIME;
     }
 
     /**
@@ -85,15 +95,9 @@ public class Card {
         }
     }
 
-    /**
-     * This method converts a Card's information to JSON format.
-     * @return An ObjectNode containing a Card's information.
-     */
-    public ObjectNode toJson() {
-        ObjectNode output = Bank.getInstance().createObjectNode();
-        output.put("cardNumber", cardNumber);
-        output.put("status", status.getStatus());
-        return output;
+    @Override
+    public <T> T accept(OutputVisitor<T> outputVisitor) {
+        return outputVisitor.convertCard(this);
     }
 
     /**
@@ -187,4 +191,6 @@ public class Card {
 
         return new TransactionData(transaction, iban);
     }
+
+    public void replace() { }
 }

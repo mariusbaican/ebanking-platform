@@ -5,6 +5,7 @@ import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.database.DatabaseEntry;
+import org.poo.bank.output.logs.Response;
 import org.poo.fileio.CommandInput;
 
 /**
@@ -32,41 +33,46 @@ public final class DeleteAccount extends Command {
     public void run() {
         DatabaseEntry entry = Bank.getInstance().getDatabase()
                 .getEntryByUser(commandInput.getEmail());
-        Account account = null;
+        Account account;
         boolean foundError = (entry == null);
         if (!foundError) {
             account = entry.getAccount(commandInput.getAccount());
             if (account == null) {
                 foundError = true;
             } else if (Double.compare(account.getBalance(), 0.0) != 0) {
-                entry.addTransaction(
-                        account.remainingFundsTransaction(commandInput.getTimestamp()));
+                entry.addTransaction(new Response()
+                        .addField("timestamp", Bank.getInstance().getTimestamp())
+                        .addField("description", "Account couldn't be deleted - there are funds remaining")
+                        .asTransactionData(account.getIban())
+                );
                 foundError = true;
             }
         }
 
         if (foundError) {
-            ObjectNode commandOutput = Bank.getInstance().createObjectNode();
-            commandOutput.put("command", "deleteAccount");
-
-            ObjectNode error = Bank.getInstance().createObjectNode();
-            error.put("error",
-                    "Account couldn't be deleted - see org.poo.transactions for details");
-            error.put("timestamp", commandInput.getTimestamp());
-
-            commandOutput.put("output", error);
-            commandOutput.put("timestamp", commandInput.getTimestamp());
-            Bank.getInstance().addToOutput(commandOutput.deepCopy());
+            Bank.getInstance().addToOutput(new Response()
+                    .addField("command", commandInput.getCommand())
+                    .addField("timestamp", Bank.getInstance().getTimestamp())
+                    .addField("output", new Response()
+                            .addField("timestamp", Bank.getInstance().getTimestamp())
+                            .addField("error", "Account couldn't be deleted - see org.poo.transactions for details")
+                            .asObjectNode()
+                    )
+                    .asObjectNode()
+            );
             return;
         }
 
         Bank.getInstance().getDatabase().removeAccount(commandInput.getAccount());
-
-        ObjectNode commandOutput = Bank.getInstance().createObjectNode();
-        commandOutput.put("command", commandInput.getCommand());
-
-        commandOutput.put("output", account.deletionJson(commandInput.getTimestamp()));
-        commandOutput.put("timestamp", commandInput.getTimestamp());
-        Bank.getInstance().addToOutput(commandOutput.deepCopy());
+        Bank.getInstance().addToOutput(new Response()
+                .addField("command", commandInput.getCommand())
+                .addField("timestamp", commandInput.getTimestamp())
+                .addField("output", new Response()
+                        .addField("timestamp", commandInput.getTimestamp())
+                        .addField("success", "Account deleted")
+                        .asObjectNode()
+                )
+                .asObjectNode()
+        );
     }
 }

@@ -4,6 +4,7 @@ import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
 import org.poo.bank.components.cards.Card;
 import org.poo.bank.database.DatabaseEntry;
+import org.poo.bank.output.logs.Response;
 import org.poo.fileio.CommandInput;
 
 /**
@@ -36,6 +37,13 @@ public final class DeleteCard extends Command {
         Card card = entry.getCard(commandInput.getCardNumber());
 
         Bank.getInstance().getDatabase().removeCard(card.getCardNumber());
-        entry.addTransaction(card.destructionTransaction(entry, commandInput.getTimestamp()));
+        entry.addTransaction(new Response()
+                .addField("timestamp", Bank.getInstance().getTimestamp())
+                .addField("description", "The card has been destroyed")
+                .addField("card", card.getCardNumber())
+                .addField("cardHolder", entry.getUser().getEmail())
+                .addField("account", card.getIban())
+                .asTransactionData(card.getIban())
+        );
     }
 }

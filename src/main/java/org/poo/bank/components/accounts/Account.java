@@ -1,28 +1,52 @@
 package org.poo.bank.components.accounts;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import org.poo.bank.Bank;
-import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
-import org.poo.bank.components.cards.Card;
-import org.poo.bank.currency.Currencies;
+import org.poo.bank.output.visitor.OutputVisitor;
+import org.poo.bank.output.visitor.Visitable;
+import org.poo.bank.output.logs.TransactionData;
+import org.poo.bank.components.ServicePlanHandler.ServicePlan;
+import org.poo.bank.components.User;
+import org.poo.bank.Tuple;
+import org.poo.bank.components.commerciants.Commerciant;
 import org.poo.fileio.CommandInput;
 import org.poo.utils.Utils;
 
-import java.util.Objects;
+import java.util.Comparator;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * This class stores and handles an Account's data.
  */
 @Data
-public abstract class Account {
+public abstract class Account implements Visitable {
     protected String currency;
     protected String iban;
     protected double balance;
     protected double minBalance;
-    protected String accountType;
+    protected AccountType accountType;
     protected String owner;
+    protected ServicePlan servicePlan;
+    protected Set<Commerciant> commerciantHistory;
+
+    public enum AccountType {
+        CLASSIC("classic"),
+        SAVINGS("savings"),
+        BUSINESS("business");
+
+        String type;
+
+        AccountType(String type) {
+            this.type = type;
+        }
+
+        @Override
+        public String toString() {
+            return type;
+        }
+    }
 
     public Account() { }
 
@@ -35,8 +59,17 @@ public abstract class Account {
         this.iban = Utils.generateIBAN();
         balance = 0;
         minBalance = 0;
-        accountType = commandInput.getAccountType();
+        accountType = fromString(commandInput.getAccountType());
         owner = commandInput.getEmail();
+        commerciantHistory = new TreeSet<>(Comparator.comparing(Commerciant::getName));
+        User user = Bank.getInstance().getDatabase().getUser(commandInput.getEmail());
+        if (user == null)
+            return;
+        if (user.getOccupation().equals(ServicePlan.STUDENT.toString())) {
+            servicePlan = ServicePlan.STUDENT;
+            return;
+        }
+        servicePlan = ServicePlan.STANDARD;
     }
 
     /**
@@ -52,22 +85,27 @@ public abstract class Account {
     public abstract boolean setInterest(double interestRate);
 
     /**
-     * This method specifies if an account is a SavingsAccount.
-     * @return True if it's a SavingsAccount. False if it's a ClassicAccount.
-     */
-    public abstract boolean isSavingsAccount();
-
-    /**
      * This method handles a payment for this account instance.
      * @param amount The amount to be paid.
      * @param requestedCurrency The original currency to be paid.
      * @return The amount that was paid in the account's currency. 0.0 if insufficient funds.
      */
     public final double pay(final double amount, final String requestedCurrency) {
-        double adjustedAmount = amount
-                * Bank.getInstance().getCurrencyExchanger()
-                .getRate(new Currencies<>(requestedCurrency, this.currency));
-        if (adjustedAmount > balance) {
+        double adjustedAmount = Bank.getInstance().getCurrencyExchanger().exchange(new Tuple<>(requestedCurrency, currency), amount);
+        if (!canAfford(adjustedAmount)) {
+            return 0.0;
+        }
+        balance -= adjustedAmount;
+        return adjustedAmount;
+    }
+
+    public final void addFunds(final double amount) {
+        balance += amount;
+    }
+
+    public final double withdrawFunds(final double amount, final String currency) {
+        double adjustedAmount = Bank.getInstance().getCurrencyExchanger().exchange(new Tuple<>(currency, this.currency), amount);
+        if (!canAfford(adjustedAmount)) {
             return 0.0;
         }
         balance -= adjustedAmount;
@@ -77,13 +115,11 @@ public abstract class Account {
     /**
      * This method handles the receiving of funds for this account instance.
      * @param amount The amount to be received.
-     * @param requestedCurrency The original currency to be received.
+     * @param receivedCurrency The original currency to be received.
      * @return The amount that was received in the account's currency.
      */
-    public final double receive(final double amount, final String requestedCurrency) {
-        double adjustedAmount = amount
-                * Bank.getInstance().getCurrencyExchanger()
-                .getRate(new Currencies<>(requestedCurrency, this.currency));
+    public final double receive(final double amount, final String receivedCurrency) {
+        double adjustedAmount = Bank.getInstance().getCurrencyExchanger().exchange(new Tuple<>(receivedCurrency, currency), amount);
         balance += adjustedAmount;
         return adjustedAmount;
     }
@@ -95,34 +131,15 @@ public abstract class Account {
      * @return The amount to be paid in the account's currency. 0.0 if insufficient funds.
      */
     public final double canAfford(final double amount, final String requestedCurrency) {
-        double adjustedAmount = amount
-                * Bank.getInstance().getCurrencyExchanger()
-                .getRate(new Currencies<>(requestedCurrency, this.currency));
+        double adjustedAmount = Bank.getInstance().getCurrencyExchanger().exchange(new Tuple<>(requestedCurrency, currency), amount);
         if (Double.compare(balance, adjustedAmount) >= 0) {
             return adjustedAmount;
         }
         return 0.0;
     }
 
-    /**
-     * This method converts an account's information to JSON format.
-     * @return An ObjectNode containing the account information.
-     */
-    public final ObjectNode toJson() {
-        ObjectNode output = Bank.getInstance().createObjectNode();
-        output.put("IBAN", iban);
-        output.put("balance", balance);
-        output.put("currency", currency);
-        output.put("type", accountType);
-        ArrayNode cardArray = Bank.getInstance().createArrayNode();
-        for (Card card : Objects.requireNonNull(Bank.getInstance()
-                .getDatabase().getEntryByAccount(iban)).getCards().values()) {
-            if (card.getIban().equals(iban)) {
-                cardArray.add(card.toJson());
-            }
-        }
-        output.put("cards", cardArray);
-        return output;
+    private boolean canAfford(final double amount) {
+        return Double.compare(balance, amount) >= 0;
     }
 
     /**
@@ -191,5 +208,25 @@ public abstract class Account {
         output.put("timestamp", timestamp);
 
         return output;
+    }
+
+    @Override
+    public <T> T accept(OutputVisitor<T> outputVisitor) {
+        return outputVisitor.convertAccount(this);
+    }
+
+    private AccountType fromString(String type) {
+        switch (type) {
+            case "classic" -> {
+                return AccountType.CLASSIC;
+            }
+            case "savings" -> {
+                return AccountType.SAVINGS;
+            }
+            case "business" -> {
+                return AccountType.BUSINESS;
+            }
+            default -> throw new IllegalArgumentException("Invalid accountType " + type);
+        }
     }
 }

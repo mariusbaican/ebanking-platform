@@ -3,7 +3,8 @@ package org.poo.bank.commands.types.transactions;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.bank.Bank;
 import org.poo.bank.commands.Command;
-import org.poo.bank.commands.types.transactions.transactionHistory.TransactionData;
+import org.poo.bank.output.logs.Response;
+import org.poo.bank.output.logs.TransactionData;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.database.DatabaseEntry;
 import org.poo.fileio.CommandInput;
@@ -39,19 +40,23 @@ public final class ChangeInterestRate extends Command {
         }
 
         Account account = entry.getAccount(commandInput.getAccount());
-
-        boolean ret = account.setInterest(commandInput.getInterestRate());
-        ObjectNode output = account.changeInterestRateJson(
-                        commandInput.getTimestamp(), commandInput.getInterestRate());
-        if (!ret) {
-            ObjectNode commandOutput = Bank.getInstance().createObjectNode();
-            commandOutput.put("command", commandInput.getCommand());
-
-            commandOutput.put("output", output);
-            commandOutput.put("timestamp", commandInput.getTimestamp());
-            Bank.getInstance().addToOutput(commandOutput);
+        if (account.getAccountType() != Account.AccountType.SAVINGS) {
+            Bank.getInstance().addToOutput(new Response()
+                    .addField("command", commandInput.getCommand())
+                    .addField("timestamp", Bank.getInstance().getTimestamp())
+                    .addField("output", new Response()
+                            .addField("timestamp", Bank.getInstance().getTimestamp())
+                            .addField("description", "This is not a savings account")
+                            .asObjectNode()
+                    )
+                    .asObjectNode()
+            );
         } else {
-            entry.addTransaction(new TransactionData(output, account.getIban()));
+            entry.addTransaction(new Response()
+                    .addField("timestamp", Bank.getInstance().getTimestamp())
+                    .addField("description", "Interest rate of the account changed to " + commandInput.getInterestRate())
+                    .asTransactionData(account.getIban())
+            );
         }
     }
 }

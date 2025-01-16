@@ -6,13 +6,13 @@ import org.poo.bank.components.CardFactory;
 import org.poo.bank.components.cards.Card;
 import org.poo.bank.components.accounts.Account;
 import org.poo.bank.database.DatabaseEntry;
+import org.poo.bank.output.logs.Response;
 import org.poo.fileio.CommandInput;
 
 /**
  * This subclass of Command has the purpose of executing a createCard request
  */
 public final class CreateCard extends Command {
-    private final boolean isOneTime;
 
     /**
      * This constructor calls the Command superclass constructor.
@@ -21,17 +21,6 @@ public final class CreateCard extends Command {
      */
     public CreateCard(final CommandInput commandInput) {
         super(commandInput);
-        isOneTime = false;
-    }
-
-    /**
-     * This constructor calls the Command superclass constructor.
-     * It stores the commandInput for further use during execution.
-     * @param commandInput The input for the requested command.
-     */
-    public CreateCard(final CommandInput commandInput, final boolean isOneTime) {
-        super(commandInput);
-        this.isOneTime = isOneTime;
     }
 
     /**
@@ -55,9 +44,16 @@ public final class CreateCard extends Command {
             return;
         }
 
-        Card card = CardFactory.generate(commandInput, isOneTime);
+        Card card = CardFactory.generate(commandInput, Card.CardType.REGULAR);
         Bank.getInstance().getDatabase().addCard(commandInput.getEmail(), card);
 
-        entry.addTransaction(card.creationTransaction(entry, commandInput.getTimestamp()));
+        entry.addTransaction(new Response()
+                .addField("timestamp", Bank.getInstance().getTimestamp())
+                .addField("description", "New card created")
+                .addField("card", card.getCardNumber())
+                .addField("cardHolder", entry.getUser().getEmail())
+                .addField("account", account.getIban())
+                .asTransactionData(account.getIban())
+        );
     }
 }

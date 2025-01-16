@@ -3,6 +3,7 @@ package org.poo.bank.components.commerciants;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import org.poo.bank.Bank;
+import org.poo.fileio.CommerciantInput;
 
 import java.util.Objects;
 
@@ -11,8 +12,11 @@ import java.util.Objects;
  */
 @Data
 public final class Commerciant {
-    private final String name;
+    private String name;
     private double total;
+    private String iban;
+    private String type;
+    private String cashbackStrategy;
 
     /**
      * This constructor creates a Commerciant object.
@@ -22,6 +26,14 @@ public final class Commerciant {
     public Commerciant(final String name, final double total) {
         this.name = name;
         this.total = total;
+    }
+
+    public Commerciant (final CommerciantInput commerciantInput, final double total) {
+        this.name = commerciantInput.getCommerciant();
+        this.total =  total;
+        this.iban = commerciantInput.getAccount();
+        this.type = commerciantInput.getType();
+        this.cashbackStrategy = commerciantInput.getCashbackStrategy();
     }
 
     /**
